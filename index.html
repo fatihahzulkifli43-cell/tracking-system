@@ -1258,6 +1258,13 @@
     var expensesOverBy = expensesRemaining < 0 ? Math.abs(expensesRemaining) : 0;
     var bufferOverBy = bufferRemaining < 0 ? Math.abs(bufferRemaining) : 0;
 
+    // Headline "still needed" figures — driven ONLY by the paid ticks, not by
+    // whatever is logged in the Pergerakan RHB movement log. The movement log
+    // is a separate, more detailed reconciliation tool (see expensesRemaining
+    // above); it should never silently change what these headline numbers show.
+    var expensesStillNeeded = expensesReserved - paidExpensesTotal;
+    var rhbStillNeededTotal = expensesStillNeeded + emergencyBuffer;
+
     // Optional reconciliation: compare the computed balance above against the
     // actual balance shown in the bank app, to catch un-logged movements.
     var hasRhbBalanceEntry = typeof monthData.rhbCurrentBalance === "number" && !isNaN(monthData.rhbCurrentBalance);
@@ -1306,6 +1313,8 @@
       maybankSpentEstimate: maybankSpentEstimate,
       maybankSurplus: maybankSurplus,
       paidExpensesTotal: paidExpensesTotal,
+      expensesStillNeeded: expensesStillNeeded,
+      rhbStillNeededTotal: rhbStillNeededTotal,
       expensesWithdrawn: expensesWithdrawn,
       emergencyWithdrawn: emergencyWithdrawn,
       totalWithdrawn: totalWithdrawn,
@@ -1764,9 +1773,9 @@
 
     // top summary card
     document.getElementById("sumIncome").textContent = formatRM(calc.income);
-    document.getElementById("sumExpenses").textContent = formatRM(Math.max(calc.expensesRemaining, 0));
+    document.getElementById("sumExpenses").textContent = formatRM(Math.max(calc.expensesStillNeeded, 0));
     document.getElementById("sumBuffer").textContent = formatRM(calc.emergencyBuffer);
-    document.getElementById("sumRhb").textContent = formatRM(Math.max(calc.computedRhbBalance, 0));
+    document.getElementById("sumRhb").textContent = formatRM(Math.max(calc.rhbStillNeededTotal, 0));
 
     var sumMaybankEl = document.getElementById("sumMaybank");
     var sumMaybankWrap = document.getElementById("sumMaybankWrap");
@@ -1779,16 +1788,17 @@
       sumMaybankWrap.classList.add("positive");
     }
 
-    // expense total + reserve banner (shows what's still needed, i.e. unpaid + not yet withdrawn)
+    // expense total + reserve banner (shows what's still needed, i.e. unpaid, regardless of the RHB movement log below)
     document.getElementById("expenseTotal").textContent = formatRM(calc.expensesReserved);
-    var stillNeeded = Math.max(calc.expensesRemaining, 0);
+    var stillNeeded = Math.max(calc.expensesStillNeeded, 0);
     document.getElementById("reserveBanner").textContent =
       "🔴 Need " + formatRM(stillNeeded) + " in RHB for Unpaid/Unreleased Expenses";
 
-    // RHB section — these two mirror expensesRemaining/computedRhbBalance so
-    // they drop automatically as expenses get ticked paid or withdrawals logged
-    document.getElementById("rhbExpensesReserved").textContent = formatRM(Math.max(calc.expensesRemaining, 0));
-    document.getElementById("rhbTotal").textContent = formatRM(Math.max(calc.computedRhbBalance, 0));
+    // RHB section — headline "still needed" figures driven ONLY by paid ticks,
+    // not by the Pergerakan RHB movement log (that log has its own reconciliation
+    // block further down: rhbExpensesRemaining / rhbComputedBalance).
+    document.getElementById("rhbExpensesReserved").textContent = formatRM(Math.max(calc.expensesStillNeeded, 0));
+    document.getElementById("rhbTotal").textContent = formatRM(Math.max(calc.rhbStillNeededTotal, 0));
     renderRhbWithdrawalSummary(calc);
 
     // Maybank section — "Available (Awal)" reference + shortfall warning
