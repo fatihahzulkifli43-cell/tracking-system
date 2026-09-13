@@ -772,11 +772,12 @@
     <div class="maybank-divider"></div>
 
     <h2 style="margin-top:18px;">🔀 Pergerakan RHB</h2>
-    <p class="hint">Catat setiap pergerakan duit RHB — <strong>➖ tolak</strong> bila ambik keluar (untuk expenses yang disenaraikan atau perbelanjaan suka2 sebab duit Maybank dah habis), <strong>➕ tambah</strong> bila top-up balik ke RHB — dan pilih pocket (Expenses / Emergency) yang terlibat. Nota: expense yang dah ditandakan ✓ kat atas dah automatik ditolak dari baki Expenses, tak payah catat lagi kat sini.</p>
+    <p class="hint">Catat setiap pergerakan duit RHB — <strong>➖ tolak</strong> bila ambik keluar (untuk expenses yang disenaraikan atau perbelanjaan suka2 sebab duit Maybank dah habis), <strong>➕ tambah</strong> bila top-up balik ke RHB — dan pilih pocket (Expenses / Emergency) yang terlibat. Nota: expense yang dah ditandakan ✓ kat atas dah automatik ditolak dari baki Expenses, tak payah catat lagi kat sini — <strong>kecuali</strong> kalau amount sebenar yang keluar dari bank lain sikit (cth: RM193 bukan RM200 sebab bank charge). Dalam kes tu, catat je amount sebenar di sini dan link ke expense tu (🔗) — bila expense ditandakan ✓, app takkan double-count.</p>
 
     <div id="rhbWithdrawalList"></div>
     <div class="empty-state" id="emptyRhbWithdrawals" style="display:none;">Belum ada pergerakan RHB dicatat. Setiap kali ambik atau top-up duit RHB, catat di sini.</div>
     <button class="add-expense-btn" id="addRhbWithdrawalBtn">+ Catat Pergerakan RHB</button>
+    <button class="add-expense-btn" id="autoLinkBtn" style="margin-top:8px; border-style:solid; background:var(--blue-soft); color:var(--blue);">🔗 Auto-link ikut nama (elak double-count)</button>
 
     <div class="row-line total">
       <div class="label">Jumlah Bersih Diambil dari RHB</div>
@@ -1094,6 +1095,11 @@
           if(w.pocket !== "expenses" && w.pocket !== "emergency") w.pocket = "expenses";
           if(w.direction !== "in" && w.direction !== "out") w.direction = "out";
           if(typeof w.name !== "string") w.name = "";
+          if(typeof w.linkedExpenseId !== "string") w.linkedExpenseId = null;
+          // drop stale links pointing at expenses that no longer exist
+          if(w.linkedExpenseId && !mo.expenses.some(function(e){ return e.id === w.linkedExpenseId; })){
+            w.linkedExpenseId = null;
+          }
         });
         if(!Array.isArray(mo.maybankExtraIncome)) mo.maybankExtraIncome = [];
         mo.maybankExtraIncome.forEach(function(x){
@@ -1245,14 +1251,36 @@
     // Ticking an expense as paid also counts as money leaving the Expenses
     // pocket in RHB — on top of anything logged manually above — so the
     // "still needed" figure drops automatically once an expense is settled.
+    // This headline total is NOT affected by linking below — it always
+    // reflects the full reserved amount for every paid expense.
     var paidExpensesTotal = monthData.expenses.reduce(function(sum, e){
       if(!e.paid) return sum;
       var amt = Number(e.amount);
       return sum + (isNaN(amt) ? 0 : amt);
     }, 0);
 
-    var totalWithdrawn = expensesWithdrawn + emergencyWithdrawn + paidExpensesTotal;
-    var expensesRemaining = expensesReserved - expensesWithdrawn - paidExpensesTotal;
+    // A withdrawal in the Pergerakan RHB log can optionally be linked to a
+    // specific expense (e.g. "sewa -RM193" linked to the "sewa" expense).
+    // When linked, that withdrawal IS the money that left RHB for that
+    // expense — so if the expense is also ticked paid, we must not ALSO
+    // subtract its full reserved amount again in the reconciliation below,
+    // or it gets double-counted. The headline paidExpensesTotal above stays
+    // untouched by this — only the movement-log reconciliation is adjusted.
+    var linkedExpenseIds = {};
+    rhbWithdrawals.forEach(function(w){
+      if(w.pocket === "expenses" && w.linkedExpenseId){
+        linkedExpenseIds[w.linkedExpenseId] = true;
+      }
+    });
+    var paidExpensesForReconcile = monthData.expenses.reduce(function(sum, e){
+      if(!e.paid) return sum;
+      if(linkedExpenseIds[e.id]) return sum; // already reflected via the linked withdrawal
+      var amt = Number(e.amount);
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
+
+    var totalWithdrawn = expensesWithdrawn + emergencyWithdrawn + paidExpensesForReconcile;
+    var expensesRemaining = expensesReserved - expensesWithdrawn - paidExpensesForReconcile;
     var bufferRemaining = emergencyBuffer - emergencyWithdrawn;
     var computedRhbBalance = expensesRemaining + bufferRemaining;
     var expensesOverBy = expensesRemaining < 0 ? Math.abs(expensesRemaining) : 0;
@@ -1313,6 +1341,7 @@
       maybankSpentEstimate: maybankSpentEstimate,
       maybankSurplus: maybankSurplus,
       paidExpensesTotal: paidExpensesTotal,
+      paidExpensesForReconcile: paidExpensesForReconcile,
       expensesStillNeeded: expensesStillNeeded,
       rhbStillNeededTotal: rhbStillNeededTotal,
       expensesWithdrawn: expensesWithdrawn,
@@ -1543,8 +1572,56 @@
       bottom.appendChild(pocketSelect);
       bottom.appendChild(amountWrap);
 
+      // Optional: link this withdrawal to a specific expense so that ticking
+      // that expense "paid" doesn't ALSO subtract its full reserved amount
+      // again (which would double-count against the amount already logged here).
+      var linkRow = document.createElement("div");
+      linkRow.className = "wd-link-row";
+      linkRow.style.marginTop = "8px";
+
+      var linkSelect = document.createElement("select");
+      linkSelect.className = "pocket-select";
+
+      function buildLinkOptions(){
+        linkSelect.innerHTML = "";
+        var noneOpt = document.createElement("option");
+        noneOpt.value = "";
+        noneOpt.textContent = "🔗 Tak link ke expense tertentu";
+        linkSelect.appendChild(noneOpt);
+        monthData.expenses.forEach(function(exp){
+          var o = document.createElement("option");
+          o.value = exp.id;
+          o.textContent = "🔗 " + (exp.name || "(Tiada nama)") + " — " + formatRM(exp.amount);
+          linkSelect.appendChild(o);
+        });
+        linkSelect.value = w.linkedExpenseId || "";
+      }
+      buildLinkOptions();
+
+      linkSelect.addEventListener("change", function(){
+        w.linkedExpenseId = linkSelect.value || null;
+        saveState();
+        renderCalculations();
+      });
+
+      linkRow.appendChild(linkSelect);
+
+      function updateLinkVisibility(){
+        linkRow.style.display = (w.pocket === "expenses") ? "block" : "none";
+      }
+      updateLinkVisibility();
+
+      // keep the pocket-change handler in sync with link visibility + clear
+      // stale links if the entry is switched away from the Expenses pocket
+      pocketSelect.addEventListener("change", function(){
+        if(w.pocket !== "expenses"){ w.linkedExpenseId = null; }
+        buildLinkOptions();
+        updateLinkVisibility();
+      });
+
       row.appendChild(top);
       row.appendChild(bottom);
+      row.appendChild(linkRow);
       list.appendChild(row);
     });
   }
@@ -2108,13 +2185,52 @@
 
     document.getElementById("addRhbWithdrawalBtn").addEventListener("click", function(){
       var monthData = state.months[state.selectedMonth];
-      monthData.rhbWithdrawals.push({ id: "wd" + (withdrawalIdCounter++), name: "", amount: 0, pocket: "expenses", direction: "out" });
+      monthData.rhbWithdrawals.push({ id: "wd" + (withdrawalIdCounter++), name: "", amount: 0, pocket: "expenses", direction: "out", linkedExpenseId: null });
       saveState();
       renderRhbWithdrawalList(monthData);
       renderCalculations();
       // focus the new entry's name field
       var rows = document.querySelectorAll("#rhbWithdrawalList .withdrawal-row input[type='text']");
       if(rows.length) rows[rows.length - 1].focus();
+    });
+
+    document.getElementById("autoLinkBtn").addEventListener("click", function(){
+      var monthData = state.months[state.selectedMonth];
+      var norm = function(s){ return String(s || "").trim().toLowerCase(); };
+      var linkedCount = 0;
+      var skippedAmbiguous = [];
+
+      monthData.rhbWithdrawals.forEach(function(w){
+        if(w.pocket !== "expenses" || w.linkedExpenseId) return; // only unlinked, expenses-pocket entries
+        var wName = norm(w.name);
+        if(!wName) return;
+
+        var matches = monthData.expenses.filter(function(e){
+          var eName = norm(e.name);
+          return eName && (eName === wName || eName.indexOf(wName) !== -1 || wName.indexOf(eName) !== -1);
+        });
+
+        if(matches.length === 1){
+          w.linkedExpenseId = matches[0].id;
+          linkedCount++;
+        } else if(matches.length > 1){
+          skippedAmbiguous.push(w.name);
+        }
+      });
+
+      saveState();
+      renderRhbWithdrawalList(monthData);
+      renderCalculations();
+
+      var msg = linkedCount > 0
+        ? linkedCount + " pergerakan berjaya di-link ikut nama yang sepadan dengan expense."
+        : "Tiada pergerakan baru yang sepadan untuk di-link. Semak nama entry vs nama expense.";
+      if(skippedAmbiguous.length > 0){
+        msg += " Ada " + skippedAmbiguous.length + " nama yang sepadan dengan lebih dari satu expense (link manual je untuk ni): " + skippedAmbiguous.join(", ") + ".";
+      }
+      openModal("Auto-link selesai", msg, function(){});
+      document.getElementById("modalConfirm").style.display = "none";
+      document.getElementById("modalCancel").textContent = "OK";
     });
 
     document.getElementById("addExtraIncomeBtn").addEventListener("click", function(){
@@ -2200,6 +2316,8 @@
   }
   function closeModal(){
     document.getElementById("modalOverlay").classList.remove("show");
+    document.getElementById("modalConfirm").style.display = "";
+    document.getElementById("modalCancel").textContent = "Cancel";
     pendingResetAction = null;
   }
 
