@@ -72,7 +72,7 @@
     margin:0;
   }
   header.top .subtitle{
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-inverse-soft);
     margin-top: 2px;
   }
@@ -127,27 +127,31 @@
     background: var(--card);
     color: var(--text-main);
     border-radius: var(--radius-lg);
-    padding: 18px;
-    margin-bottom: 14px;
+    padding: 20px 18px;
+    margin-bottom: 16px;
     box-shadow: var(--shadow);
   }
   .card h2{
-    font-size: 13px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--text-soft);
-    margin: 0 0 12px;
+    margin: 0 0 14px;
     font-weight: 700;
     display:flex;
     align-items:center;
     gap:6px;
   }
   .card p.hint{
-    font-size: 12.5px;
+    font-size: 13.5px;
     color: var(--text-soft);
-    margin: -4px 0 12px;
-    line-height:1.45;
+    margin: -2px 0 14px;
+    line-height:1.5;
   }
+  /* Elements kept for JS but with no visible text when empty */
+  .card p.hint:empty,
+  .expense-paid-note:empty,
+  .result-block .result-note:empty{ display:none !important; }
 
   /* ============================================================
      SUMMARY CARD (top)
@@ -178,7 +182,7 @@
     padding: 10px 12px;
   }
   .summary-item .label{
-    font-size: 11px;
+    font-size: 12.5px;
     color: var(--text-inverse-soft);
     margin-bottom: 4px;
     display:flex; align-items:center; gap:4px;
@@ -331,7 +335,7 @@
     color: var(--text-soft);
   }
   .expense-paid-note{
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-soft);
     margin-top: 8px;
     text-align: center;
@@ -392,6 +396,7 @@
     padding: 18px 8px;
     color: var(--text-soft);
     font-size: 13.5px;
+    padding: 14px 8px;
   }
 
   .add-expense-btn{
@@ -525,7 +530,7 @@
     text-align:center;
   }
   .shortfall-banner .big{ font-size: 20px; font-weight: 800; }
-  .shortfall-banner .small{ font-size: 12.5px; margin-top: 4px; font-weight:600; opacity:0.85; }
+  .shortfall-banner .small{ font-size: 13px; margin-top: 4px; font-weight:600; opacity:0.85; }
 
   /* ============================================================
      OVERALL SUMMARY (collapsible)
@@ -564,7 +569,7 @@
     border-radius: var(--radius-sm);
     padding: 10px 12px;
   }
-  .overall-item .label{ font-size: 11.5px; color: var(--text-soft); font-weight:600; margin-bottom:3px; }
+  .overall-item .label{ font-size: 12.5px; color: var(--text-soft); font-weight:600; margin-bottom:3px; }
   .overall-item .value{ font-size: 16px; font-weight: 800; color: var(--text-main); }
   .overall-item.wide{ grid-column: 1/-1; }
   .overall-item.accent .value{ color: var(--teal); }
@@ -583,9 +588,9 @@
     border-radius: var(--radius-md);
     padding: 14px 14px 12px;
   }
-  .totals-tile .label{ font-size: 12px; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 4px; }
+  .totals-tile .label{ font-size: 13px; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 4px; }
   .totals-tile .value{ font-size: 24px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
-  .totals-tile .formula{ font-size: 11px; margin-top: 4px; line-height: 1.4; opacity: 0.8; }
+  .totals-tile .formula{ font-size: 12px; margin-top: 4px; line-height: 1.4; opacity: 0.75; }
   .totals-tile.all{ background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); }
   .totals-tile.all .value{ color: var(--text-inverse); }
   .totals-tile.available{ background: rgba(20,184,166,0.14); border: 1px solid rgba(20,184,166,0.35); }
@@ -601,23 +606,23 @@
   .acct-row .acct-name{ font-size: 13.5px; font-weight: 700; display:flex; align-items:center; gap:6px; }
   .acct-row .acct-dot{ width:9px; height:9px; border-radius:999px; flex:0 0 auto; }
   .acct-row .acct-badge{
-    font-size: 10px; font-weight: 700; color: #5eead4;
+    font-size: 11px; font-weight: 700; color: #5eead4;
     background: rgba(20,184,166,0.14); border-radius: 999px; padding: 2px 6px;
   }
   .acct-row .acct-right{ text-align:right; }
   .acct-row .acct-value{ font-size: 15px; font-weight: 700; }
   .acct-row .acct-value.missing{ color: var(--amber); font-size: 13px; }
-  .acct-row .acct-src{ font-size: 10.5px; color: var(--text-inverse-soft); margin-top: 1px; }
+  .acct-row .acct-src{ font-size: 12px; color: var(--text-inverse-soft); margin-top: 1px; }
   .totals-warning{
     margin-top: 12px;
     background: rgba(245,158,11,0.12);
     color: #fcd34d;
     border-radius: var(--radius-sm);
     padding: 10px 12px;
-    font-size: 12.5px;
+    font-size: 13px;
     line-height: 1.45;
   }
-  .totals-footnote{ font-size: 11.5px; color: var(--text-inverse-soft); margin-top: 10px; line-height: 1.5; }
+  .totals-footnote{ font-size: 12.5px; color: var(--text-inverse-soft); margin-top: 10px; line-height: 1.5; }
   @media (max-width: 480px){
     .totals-grid{ grid-template-columns: 1fr; }
   }
@@ -715,14 +720,14 @@
     margin-top: 8px;
   }
   .notes-meta .notes-count{
-    font-size: 11.5px;
+    font-size: 12.5px;
     color: var(--text-soft);
   }
   .notes-clear-btn{
     border:none;
     background:none;
     color: var(--red);
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     padding: 4px 6px;
@@ -731,7 +736,7 @@
 
   footer.app-footer{
     text-align:center;
-    font-size: 11.5px;
+    font-size: 12.5px;
     color: var(--text-inverse-soft);
     margin-top: 6px;
     padding: 0 20px;
@@ -793,9 +798,8 @@
   <!-- EXPENSES -->
   <div class="card">
     <h2>🧾 Expenses</h2>
-    <p class="hint">Tandakan ✓ bila dah bayar — amount akan terus ditolak dari "Baki Expenses Reserved Tinggal" dalam RHB (tak payah catat sebagai pengeluaran lagi).</p>
     <div id="expenseList"></div>
-    <div class="empty-state" id="emptyExpenses" style="display:none;">No expenses yet. Add your first one below.</div>
+    <div class="empty-state" id="emptyExpenses" style="display:none;">No expenses yet.</div>
     <button class="add-expense-btn" id="addExpenseBtn">+ Add Expense</button>
     <div class="expense-total-row">
       <div class="label">Total Expenses</div>
@@ -808,7 +812,6 @@
   <!-- RHB -->
   <div class="card rhb">
     <h2>🏦 RHB — Protected Money</h2>
-    <p class="hint">Money kept in RHB for reserved expenses only. This money is not counted as freely spendable Maybank money. Emergency fund is kept in ShopeePay Money+ / TNG Go+, not in RHB.</p>
 
     <div class="row-line">
       <div class="label">Expenses Reserved (Still Needed)</div>
@@ -823,12 +826,12 @@
     <div class="maybank-divider"></div>
 
     <h2 style="margin-top:18px;">🔀 Pergerakan RHB</h2>
-    <p class="hint">Catat setiap pergerakan duit RHB — <strong>➖ tolak</strong> bila ambik keluar (untuk expenses yang disenaraikan atau perbelanjaan suka2 sebab duit Maybank dah habis), <strong>➕ tambah</strong> bila top-up balik ke RHB. Nota: expense yang dah ditandakan ✓ kat atas dah automatik ditolak dari baki Expenses, tak payah catat lagi kat sini — <strong>kecuali</strong> kalau amount sebenar yang keluar dari bank lain sikit (cth: RM193 bukan RM200 sebab bank charge). Dalam kes tu, catat je amount sebenar di sini dan link ke expense tu (🔗) — bila expense ditandakan ✓, app takkan double-count.</p>
+    <p class="hint">➖ tolak bila ambil keluar, ➕ tambah bila top-up. Expense ✓ dah ditolak automatik — guna 🔗 jika amount sebenar berbeza.</p>
 
     <div id="rhbWithdrawalList"></div>
-    <div class="empty-state" id="emptyRhbWithdrawals" style="display:none;">Belum ada pergerakan RHB dicatat. Setiap kali ambik atau top-up duit RHB, catat di sini.</div>
+    <div class="empty-state" id="emptyRhbWithdrawals" style="display:none;">Belum ada pergerakan.</div>
     <button class="add-expense-btn" id="addRhbWithdrawalBtn">+ Catat Pergerakan RHB</button>
-    <button class="add-expense-btn" id="autoLinkBtn" style="margin-top:8px; border-style:solid; background:var(--blue-soft); color:var(--blue);">🔗 Auto-link ikut nama (elak double-count)</button>
+    <button class="add-expense-btn" id="autoLinkBtn" style="margin-top:8px; border-style:solid; background:var(--blue-soft); color:var(--blue);">🔗 Auto-link ikut nama</button>
 
     <div class="row-line total">
       <div class="label">Jumlah Bersih Diambil dari RHB</div>
@@ -842,13 +845,12 @@
 
     <div class="shortfall-banner" id="rhbExpensesOverBanner" style="display:none;">
       <div class="big" id="rhbExpensesOverAmount">⚠️ Expenses Reserved lebih guna RM0.00</div>
-      <div class="small">Pengeluaran dari RHB / expense yang dibayar dah melebihi jumlah yang direserve untuk bulan ni.</div>
+      <div class="small">Bayaran melebihi jumlah yang direserve.</div>
     </div>
 
     <div class="maybank-divider" style="margin-top:18px;"></div>
 
     <h2 style="margin-top:18px;">✅ Semak Baki RHB (Bank)</h2>
-    <p class="hint">Optional — masukkan baki RHB sebenar ikut app bank untuk pastikan catatan pergerakan di atas padan dengan baki sebenar.</p>
 
     <div class="buffer-input-row">
       <div class="label">Baki RHB Sekarang (Bank)</div>
@@ -875,20 +877,20 @@
 
     <div class="shortfall-banner" id="shortfallBanner" style="display:none;">
       <div class="big" id="shortfallAmount">⚠️ Short by RM0.00</div>
-      <div class="small">Income is not enough to cover the RHB reserves.</div>
+      <div class="small">Income tak cukup untuk RHB reserves.</div>
     </div>
 
     <div class="maybank-divider"></div>
 
-    <h2 style="margin-top:18px;">➕ Income Luar untuk Suka2</h2>
-    <p class="hint">Duit yang masuk terus ke Maybank untuk suka2 — bukan dari income bulanan yang dah dikira kat atas. Cth: bonus, duit raya, side income, jual barang.</p>
+    <h2 style="margin-top:18px;">➕ Income Luar</h2>
+    <p class="hint">Masuk terus ke Maybank, bukan dari income bulanan (cth: bonus, duit raya).</p>
 
     <div id="extraIncomeList"></div>
-    <div class="empty-state" id="emptyExtraIncome" style="display:none;">Tiada income luar dicatat lagi.</div>
+    <div class="empty-state" id="emptyExtraIncome" style="display:none;">Tiada income luar lagi.</div>
     <button class="add-expense-btn" id="addExtraIncomeBtn">+ Catat Income Luar</button>
 
     <div class="row-line" id="maybankExtraIncomeRow" style="display:none;">
-      <div class="label">➕ Income Luar untuk Suka2</div>
+      <div class="label">➕ Income Luar</div>
       <div class="value" id="maybankExtraIncomeValue">RM0.00</div>
     </div>
     <div class="row-line total" id="maybankAdjustedRow" style="display:none;">
@@ -899,7 +901,6 @@
     <div class="maybank-divider"></div>
 
     <h2 style="margin-top:18px;">🧮 Kira Perbelanjaan Sebenar</h2>
-    <p class="hint">Tak ingat belanja apa? Takpe — masukkan je baki Maybank yang tinggal sekarang, app akan kira sendiri berapa yang dah dibelanjakan.</p>
 
     <div class="buffer-input-row">
       <div class="label">Baki Maybank Sekarang</div>
@@ -909,7 +910,7 @@
       </div>
     </div>
 
-    <p class="hint" id="maybankEmptyHint" style="margin-top:10px; margin-bottom:0;">Belum masukkan baki semasa lagi.</p>
+    <p class="hint" id="maybankEmptyHint" style="margin-top:10px; margin-bottom:0;"></p>
 
     <div id="maybankBalanceResultBlock" class="result-block" style="display:none;">
       <div class="result-label">Baki Tinggal untuk Berbelanja</div>
@@ -924,16 +925,15 @@
 
     <div class="shortfall-banner" id="maybankSurplusBanner" style="display:none;">
       <div class="big" id="maybankSurplusAmount">ℹ️ Baki lebih RM0.00</div>
-      <div class="small">Baki semasa lebih tinggi dari jumlah yang sepatutnya ada — semak semula angka yang dimasukkan.</div>
+      <div class="small">Lebih tinggi dari sepatutnya — semak semula.</div>
     </div>
   </div>
 
   <!-- ASNB -->
   <div class="card asnb">
     <h2>💰 ASNB</h2>
-    <p class="hint">Catat setiap kali masuk (simpanan/dividen) atau keluar (withdraw) — sekadar rekod, tak dikira dalam mana-mana total di atas. Baki ASNB dikira dalam 💰 Total Account Balances di bawah.</p>
     <div id="asnbList"></div>
-    <div class="empty-state" id="emptyAsnb" style="display:none;">Belum ada catatan ASNB lagi.</div>
+    <div class="empty-state" id="emptyAsnb" style="display:none;">Belum ada catatan.</div>
     <button class="add-expense-btn" id="addAsnbBtn">+ Catat Transaksi ASNB</button>
 
     <div class="row-line">
@@ -961,9 +961,8 @@
   <!-- TNG -->
   <div class="card tng">
     <h2>🚗 TNG Go+</h2>
-    <p class="hint">Catat setiap kali reload (masuk) atau guna untuk toll/parking (keluar) — sekadar rekod, tak dikira dalam mana-mana total di atas. Baki TNG Go+ dikira dalam 💰 Total Account Balances di bawah.</p>
     <div id="tngList"></div>
-    <div class="empty-state" id="emptyTng" style="display:none;">Belum ada catatan TNG lagi.</div>
+    <div class="empty-state" id="emptyTng" style="display:none;">Belum ada catatan.</div>
     <button class="add-expense-btn" id="addTngBtn">+ Catat Transaksi TNG</button>
 
     <div class="row-line">
@@ -991,9 +990,8 @@
   <!-- SHOPEEPAY MONEY+ -->
   <div class="card shopeepay">
     <h2>🛍️ ShopeePay Money+</h2>
-    <p class="hint">Simpanan kecemasan. Catat setiap kali masuk (top-up / simpanan / pulangan harian) atau keluar (guna / withdraw). Baki ShopeePay Money+ dikira dalam 💰 Total Account Balances di bawah.</p>
     <div id="spList"></div>
-    <div class="empty-state" id="emptySp" style="display:none;">Belum ada catatan ShopeePay Money+ lagi.</div>
+    <div class="empty-state" id="emptySp" style="display:none;">Belum ada catatan.</div>
     <button class="add-expense-btn" id="addSpBtn">+ Catat Transaksi ShopeePay Money+</button>
 
     <div class="row-line">
@@ -1054,8 +1052,7 @@
   <!-- NOTES / CATATAN -->
   <div class="card">
     <h2>📝 Catatan (<span id="notesMonthLabel">September 2026</span>)</h2>
-    <p class="hint">Nota untuk bulan ni je — bila tukar bulan, catatan lain akan keluar.</p>
-    <textarea class="notes-textarea" id="notesInput" placeholder="Tulis catatan awak di sini... contohnya reminder bayaran, benda nak follow up, dll."></textarea>
+    <textarea class="notes-textarea" id="notesInput" placeholder="Tulis catatan di sini…"></textarea>
     <div class="notes-meta">
       <span class="notes-count" id="notesCount">0 aksara</span>
       <button class="notes-clear-btn" id="notesClearBtn" type="button">Kosongkan</button>
@@ -1064,22 +1061,22 @@
 
   <!-- TOTAL ACCOUNT BALANCES -->
   <div class="summary-card totals-card">
-    <h2>💰 Total Account Balances <span style="font-weight:600; color:var(--text-inverse-soft); font-size:12px;">(<span id="totalsMonthLabel">Sep 2026</span>)</span></h2>
+    <h2>💰 Total Account Balances <span style="font-weight:600; color:var(--text-inverse-soft); font-size:13px; text-transform:none;">(<span id="totalsMonthLabel">Sep 2026</span>)</span></h2>
     <div class="totals-grid">
       <div class="totals-tile all">
         <div class="label">Total All</div>
         <div class="value" id="totalAllValue">RM0.00</div>
-        <div class="formula">RHB + ASNB + TNG Go+ + Maybank + ShopeePay Money+</div>
+        <div class="formula">Semua akaun</div>
       </div>
       <div class="totals-tile available">
         <div class="label">Total Available</div>
         <div class="value" id="totalAvailableValue">RM0.00</div>
-        <div class="formula">TNG Go+ + Maybank + ShopeePay Money+</div>
+        <div class="formula">Tanpa RHB &amp; ASNB</div>
       </div>
     </div>
     <div id="accountBalanceList"></div>
     <div class="totals-warning" id="totalsWarning" style="display:none;"></div>
-    <div class="totals-footnote">Guna baki sebenar yang dimasukkan untuk bulan ni. Kalau belum ada, guna baki sebenar terkini dari bulan sebelum, atau baki ikut catatan bulan ni (kalau ada catatan). Hanya baki akaun dijumlahkan — income, transfer dan catatan transaksi tak dikira dua kali.</div>
+    <div class="totals-footnote">Guna baki sebenar bulan ni, atau yang terkini jika belum diisi.</div>
   </div>
 
   <!-- RESET -->
@@ -1092,7 +1089,7 @@
   </div>
 
   <footer class="app-footer">
-    All data is stored locally in this browser only. No account, backend, or internet connection required.
+    Data disimpan dalam browser ini sahaja.
   </footer>
 
 </div>
@@ -1119,13 +1116,13 @@
   var STORAGE_KEY = "moneyTrackerData_v1";
 
   var MONTHS = [
-    { key: "2026-09", label: "November 2026", short: "Nov 2026" },
-    { key: "2026-10", label: "December 2026",   short: "Dec 2026" },
-    { key: "2026-11", label: "January 2027",  short: "Jan 2027" },
-    { key: "2026-12", label: "February 2027",  short: "Feb 2027" },
-    { key: "2027-01", label: "March 2027",   short: "Mar 2027" },
-    { key: "2027-02", label: "April 2027",  short: "Apr 2027" },
-    { key: "2027-03", label: "May 2027",     short: "May 2027" }
+    { key: "2026-09", label: "September 2026", short: "Sep 2026" },
+    { key: "2026-10", label: "October 2026",   short: "Oct 2026" },
+    { key: "2026-11", label: "November 2026",  short: "Nov 2026" },
+    { key: "2026-12", label: "December 2026",  short: "Dec 2026" },
+    { key: "2027-01", label: "January 2027",   short: "Jan 2027" },
+    { key: "2027-02", label: "February 2027",  short: "Feb 2027" },
+    { key: "2027-03", label: "March 2027",     short: "Mar 2027" }
   ];
 
   /* ============================================================
@@ -1558,7 +1555,7 @@
         var a = Number(e.amount);
         return s + (isNaN(a) ? 0 : a);
       }, 0);
-      paidNote.textContent = "✓ " + paidCount + " dari " + monthData.expenses.length + " dah dibayar — " + formatRM(paidTotal) + " ditolak dari baki RHB (Expenses) secara automatik.";
+      paidNote.textContent = "✓ " + paidCount + "/" + monthData.expenses.length + " dibayar · " + formatRM(paidTotal) + " ditolak dari RHB";
     }
   }
 
@@ -2021,7 +2018,7 @@
     } else if(diff < 0){
       // bank balance is lower than what the log says it should be —
       // some movement likely wasn't logged
-      reconcileLabel.textContent = "⚠️ Kurang dari catatan (belum dicatat)";
+      reconcileLabel.textContent = "⚠️ Kurang dari catatan";
       reconcileValue.textContent = "-" + formatRM(Math.abs(diff));
       reconcileValue.style.color = "var(--red)";
     } else {
@@ -2086,11 +2083,11 @@
       bigResult.classList.add(calc.maybankCurrentBalance < 0 ? "negative" : "zero");
       bigNote.textContent = calc.maybankCurrentBalance < 0
         ? "Baki negatif — semak semula akaun Maybank."
-        : "Tiada baki lagi untuk berbelanja bulan ni.";
+        : "Tiada baki lagi untuk berbelanja.";
     } else {
       bigResult.textContent = formatRM(calc.maybankCurrentBalance);
       bigResult.classList.add("positive");
-      bigNote.textContent = "Ini baki sebenar yang tinggal untuk berbelanja bulan ni.";
+      bigNote.textContent = "";
     }
 
     spentValueEl.textContent = formatRM(calc.maybankSpentEstimate);
@@ -2174,12 +2171,12 @@
     var monthData = state.months[state.selectedMonth];
     if(acct.key === "rhb"){
       if(monthData.expenses.length > 0 || monthData.rhbWithdrawals.length > 0){
-        return { value: calcMonth(monthData).computedRhbBalance, source: "Ikut catatan (Baki RHB Sepatutnya)" };
+        return { value: calcMonth(monthData).computedRhbBalance, source: "Ikut catatan" };
       }
     } else if(acct.entriesKey){
       var entries = monthData[acct.entriesKey];
       if(entries.length > 0){
-        return { value: trackerNet(entries), source: "Ikut catatan bulan ni" };
+        return { value: trackerNet(entries), source: "Ikut catatan" };
       }
     }
     return null;
@@ -2246,8 +2243,7 @@
     var warn = document.getElementById("totalsWarning");
     if(missingAll.length){
       warn.style.display = "block";
-      warn.textContent = "* Total belum lengkap — baki untuk " + missingAll.join(", ") +
-        " belum dimasukkan, jadi tak dikira dalam total. Masukkan baki sebenar dalam section masing-masing.";
+      warn.textContent = "* Belum lengkap — baki " + missingAll.join(", ") + " belum dimasukkan.";
     } else {
       warn.style.display = "none";
     }
