@@ -1406,17 +1406,15 @@
     var maybankSurplus = 0;
 
     if(hasBalanceEntry){
-      // Work in cents to avoid JavaScript floating-point precision warnings
-      // (e.g. 221.95 - 221.95 producing a tiny non-zero decimal).
-      var diffCents = Math.round((maybankAvailableAdjusted - maybankCurrentBalance) * 100);
-
-      if(diffCents >= 0){
-        maybankSpentEstimate = diffCents / 100;
+      // round to cents so floating-point noise (e.g. 1e-14) is treated as exactly zero
+      var diff = Math.round((maybankAvailableAdjusted - maybankCurrentBalance) * 100) / 100;
+      if(diff >= 0){
+        maybankSpentEstimate = diff;
         maybankSurplus = 0;
       } else {
-        // Only flag a real surplus of at least RM0.01.
+        // current balance is higher than what should be available — flag it, don't show negative spending
         maybankSpentEstimate = 0;
-        maybankSurplus = Math.abs(diffCents) / 100;
+        maybankSurplus = Math.abs(diff);
       }
     }
 
