@@ -755,7 +755,7 @@
   <header class="top">
     <div>
       <h1>💸 Money Tracker</h1>
-      <div class="subtitle" id="monthSubtitle">September 2026</div>
+      <div class="subtitle" id="monthSubtitle">November 2026</div>
     </div>
     <div class="save-indicator" id="saveIndicator">✓ Saved</div>
   </header>
@@ -765,7 +765,7 @@
 
   <!-- MONTHLY SUMMARY -->
   <div class="summary-card">
-    <h2 id="summaryTitle">September 2026</h2>
+    <h2 id="summaryTitle">November 2026</h2>
     <div class="summary-grid">
       <div class="summary-item">
         <div class="label">💰 Income</div>
@@ -1020,7 +1020,7 @@
   <!-- OVERALL PERIOD SUMMARY -->
   <div class="card">
     <button class="overall-toggle" id="overallToggle">
-      <h2 style="margin:0;">📊 Overall Summary (Sep 2026 – Mar 2027)</h2>
+      <h2 style="margin:0;">📊 Overall Summary (Nov 2026 – May 2027)</h2>
       <span class="chev">▾</span>
     </button>
     <div class="overall-body" id="overallBody">
@@ -1051,7 +1051,7 @@
 
   <!-- NOTES / CATATAN -->
   <div class="card">
-    <h2>📝 Catatan (<span id="notesMonthLabel">September 2026</span>)</h2>
+    <h2>📝 Catatan (<span id="notesMonthLabel">November 2026</span>)</h2>
     <textarea class="notes-textarea" id="notesInput" placeholder="Tulis catatan di sini…"></textarea>
     <div class="notes-meta">
       <span class="notes-count" id="notesCount">0 aksara</span>
@@ -1061,7 +1061,7 @@
 
   <!-- TOTAL ACCOUNT BALANCES -->
   <div class="summary-card totals-card">
-    <h2>💰 Total Account Balances <span style="font-weight:600; color:var(--text-inverse-soft); font-size:13px; text-transform:none;">(<span id="totalsMonthLabel">Sep 2026</span>)</span></h2>
+    <h2>💰 Total Account Balances <span style="font-weight:600; color:var(--text-inverse-soft); font-size:13px; text-transform:none;">(<span id="totalsMonthLabel">Nov 2026</span>)</span></h2>
     <div class="totals-grid">
       <div class="totals-tile all">
         <div class="label">Total All</div>
@@ -1116,13 +1116,13 @@
   var STORAGE_KEY = "moneyTrackerData_v1";
 
   var MONTHS = [
-    { key: "2026-09", label: "September 2026", short: "Sep 2026" },
-    { key: "2026-10", label: "October 2026",   short: "Oct 2026" },
     { key: "2026-11", label: "November 2026",  short: "Nov 2026" },
     { key: "2026-12", label: "December 2026",  short: "Dec 2026" },
     { key: "2027-01", label: "January 2027",   short: "Jan 2027" },
     { key: "2027-02", label: "February 2027",  short: "Feb 2027" },
-    { key: "2027-03", label: "March 2027",     short: "Mar 2027" }
+    { key: "2027-03", label: "March 2027",     short: "Mar 2027" },
+    { key: "2027-04", label: "April 2027",     short: "Apr 2027" },
+    { key: "2027-05", label: "May 2027",       short: "May 2027" }
   ];
 
   /* ============================================================
@@ -2491,7 +2491,7 @@
     document.getElementById("resetAllBtn").addEventListener("click", function(){
       openModal(
         "Reset ALL data?",
-        "This will permanently erase income, expenses, RHB movements, Maybank, notes, ASNB, TNG Go+, and ShopeePay Money+ data for every month from September 2026 to March 2027. This cannot be undone.",
+        "This will permanently erase income, expenses, RHB movements, Maybank, notes, ASNB, TNG Go+, and ShopeePay Money+ data for every month from November 2026 to May 2027. This cannot be undone.",
         function(){
           state = defaultState();
           expenseIdCounter = 1;
