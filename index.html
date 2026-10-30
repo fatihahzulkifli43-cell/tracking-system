@@ -1320,13 +1320,35 @@
     var rhbRequired = expensesReserved;
     var remaining = income - rhbRequired;
 
+    // Money already taken out of RHB for an expense via a manual, LINKED
+    // withdrawal is no longer reserved in RHB, so it is added back to the
+    // Maybank allocation. Per linked expense the net (out minus in) is used, so
+    // top-ups offset withdrawals; negatives are ignored and the add-back is
+    // capped at the expense amount. Expenses ticked paid are skipped — their
+    // full amount is already settled via the paid tick (no double counting) —
+    // and unlinked withdrawals are never added back.
+    var linkedNetByExpense = {};
+    (Array.isArray(monthData.rhbWithdrawals) ? monthData.rhbWithdrawals : []).forEach(function(w){
+      if(!w.linkedExpenseId) return;
+      var wAmt = Number(w.amount);
+      if(isNaN(wAmt)) wAmt = 0;
+      linkedNetByExpense[w.linkedExpenseId] = (linkedNetByExpense[w.linkedExpenseId] || 0) + (w.direction === "in" ? -wAmt : wAmt);
+    });
+    var rhbLinkedPaidDirect = monthData.expenses.reduce(function(sum, e){
+      if(e.paid || !(e.id in linkedNetByExpense)) return sum;
+      var eAmt = Number(e.amount);
+      if(isNaN(eAmt)) eAmt = 0;
+      return sum + Math.min(Math.max(linkedNetByExpense[e.id], 0), Math.max(eAmt, 0));
+    }, 0);
+    var maybankRemaining = remaining + rhbLinkedPaidDirect;
+
     var maybankOtherSpending, shortfall;
-    if(remaining >= 0){
-      maybankOtherSpending = remaining;
+    if(maybankRemaining >= 0){
+      maybankOtherSpending = Math.round(maybankRemaining * 100) / 100;
       shortfall = 0;
     } else {
       maybankOtherSpending = 0;
-      shortfall = Math.abs(remaining);
+      shortfall = Math.abs(Math.round(maybankRemaining * 100) / 100);
     }
 
     // RHB movement log: every ringgit moved in or out of RHB is logged by hand
