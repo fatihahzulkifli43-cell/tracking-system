@@ -442,6 +442,7 @@
   .card.rhb{ border-left: 5px solid var(--blue); }
   .card.maybank{ border-left: 5px solid var(--teal); }
   .card.maybank .row-line.total .value{ color: var(--teal); }
+  .card.maybank .buffer-input-wrap:focus-within{ border-color: var(--teal); }
   .card.asnb{ border-left: 5px solid #7c3aed; }
   .card.tng{ border-left: 5px solid #0891b2; }
   .card.shopeepay{ border-left: 5px solid var(--orange); }
@@ -826,7 +827,7 @@
     <div class="maybank-divider"></div>
 
     <h2 style="margin-top:18px;">🔀 Pergerakan RHB</h2>
-    <p class="hint">➖ tolak bila ambil keluar, ➕ tambah bila top-up. Expense ✓ dah ditolak automatik — guna 🔗 jika amount sebenar berbeza.</p>
+  
 
     <div id="rhbWithdrawalList"></div>
     <div class="empty-state" id="emptyRhbWithdrawals" style="display:none;">Belum ada pergerakan.</div>
@@ -853,7 +854,7 @@
     <h2 style="margin-top:18px;">✅ Semak Baki RHB (Bank)</h2>
 
     <div class="buffer-input-row">
-      <div class="label">Baki RHB Sekarang (Bank)</div>
+      <div class="label">Baki RHB</div>
       <div class="buffer-input-wrap" style="width:150px;">
         <span>RM</span>
         <input type="number" inputmode="decimal" step="0.01" min="0" id="rhbBalanceInput" placeholder="0.00">
@@ -882,20 +883,27 @@
 
     <div class="maybank-divider"></div>
 
-    <h2 style="margin-top:18px;">➕ Income Luar</h2>
-    <p class="hint">Masuk terus ke Maybank, bukan dari income bulanan (cth: bonus, duit raya).</p>
+    <h2 style="margin-top:18px;">🔀 Pergerakan Maybank</h2>
 
-    <div id="extraIncomeList"></div>
-    <div class="empty-state" id="emptyExtraIncome" style="display:none;">Tiada income luar lagi.</div>
-    <button class="add-expense-btn" id="addExtraIncomeBtn">+ Catat Income Luar</button>
+    <div id="maybankMovementList"></div>
+    <div class="empty-state" id="emptyMaybankMovements" style="display:none;">Belum ada pergerakan.</div>
+    <button class="add-expense-btn" id="addMaybankMovementBtn">+ Catat Pergerakan Maybank</button>
 
-    <div class="row-line" id="maybankExtraIncomeRow" style="display:none;">
-      <div class="label">➕ Income Luar</div>
-      <div class="value" id="maybankExtraIncomeValue">RM0.00</div>
+    <div class="row-line">
+      <div class="label">Total Masuk</div>
+      <div class="value" id="maybankTotalIn">RM0.00</div>
     </div>
-    <div class="row-line total" id="maybankAdjustedRow" style="display:none;">
-      <div class="label">Jumlah Tersedia (Total)</div>
-      <div class="value" id="maybankAdjustedValue">RM0.00</div>
+    <div class="row-line">
+      <div class="label">Total Keluar</div>
+      <div class="value" id="maybankTotalOut">RM0.00</div>
+    </div>
+    <div class="row-line">
+      <div class="label">Net Movement</div>
+      <div class="value" id="maybankNetMovement">RM0.00</div>
+    </div>
+    <div class="row-line total">
+      <div class="label">Baki Maybank Sepatutnya</div>
+      <div class="value" id="maybankExpectedBalance">RM0.00</div>
     </div>
 
     <div class="maybank-divider"></div>
@@ -903,11 +911,16 @@
     <h2 style="margin-top:18px;">🧮 Kira Perbelanjaan Sebenar</h2>
 
     <div class="buffer-input-row">
-      <div class="label">Baki Maybank Sekarang</div>
+      <div class="label">Baki Maybank</div>
       <div class="buffer-input-wrap" style="width:150px;">
         <span>RM</span>
         <input type="number" inputmode="decimal" step="0.01" min="0" id="maybankBalanceInput" placeholder="0.00">
       </div>
+    </div>
+
+    <div class="row-line" id="maybankReconcileRow" style="display:none;">
+      <div class="label" id="maybankReconcileLabel">Berbanding catatan</div>
+      <div class="value" id="maybankReconcileValue">RM0.00</div>
     </div>
 
     <p class="hint" id="maybankEmptyHint" style="margin-top:10px; margin-bottom:0;"></p>
@@ -1128,17 +1141,17 @@
   /* ============================================================
      STATE
      ============================================================ */
-  var state = null;         // { selectedMonth, months: { key: { income, expenses:[{id,name,amount}], rhbWithdrawals:[{id,name,amount,pocket,direction}], maybankExtraIncome:[{id,name,amount}], spEntries:[{id,name,amount,direction}], spCurrentBalance } } }
+  var state = null;         // { selectedMonth, months: { key: { income, expenses:[{id,name,amount}], rhbWithdrawals:[{id,name,amount,pocket,direction}], maybankMovements:[{id,name,amount,direction}], spEntries:[{id,name,amount,direction}], spCurrentBalance } } }
   var expenseIdCounter = 1;
   var withdrawalIdCounter = 1;
-  var extraIncomeIdCounter = 1;
+  var maybankMovementIdCounter = 1;
   var asnbIdCounter = 1;
   var tngIdCounter = 1;
   var spIdCounter = 1;
   var pendingResetAction = null; // function to run if modal confirmed
 
   function emptyMonth(){
-    return { income: 0, expenses: [], rhbWithdrawals: [], maybankExtraIncome: [], maybankCurrentBalance: null, rhbCurrentBalance: null, notes: "", asnbEntries: [], asnbCurrentBalance: null, tngEntries: [], tngCurrentBalance: null, spEntries: [], spCurrentBalance: null };
+    return { income: 0, expenses: [], rhbWithdrawals: [], maybankMovements: [], maybankCurrentBalance: null, rhbCurrentBalance: null, notes: "", asnbEntries: [], asnbCurrentBalance: null, tngEntries: [], tngCurrentBalance: null, spEntries: [], spCurrentBalance: null };
   }
 
   function defaultState(){
@@ -1185,10 +1198,24 @@
             w.linkedExpenseId = null;
           }
         });
-        if(!Array.isArray(mo.maybankExtraIncome)) mo.maybankExtraIncome = [];
-        mo.maybankExtraIncome.forEach(function(x){
+        if(!Array.isArray(mo.maybankMovements)) mo.maybankMovements = [];
+        // One-time migration: old "Income Luar" entries were money coming into
+        // Maybank, so they become incoming (Masuk) Maybank movements. Nothing is lost.
+        if(Array.isArray(mo.maybankExtraIncome)){
+          mo.maybankExtraIncome.forEach(function(x, i){
+            mo.maybankMovements.push({
+              id: (typeof x.id === "string" && x.id) ? x.id : ("ext" + (i + 1)),
+              name: typeof x.name === "string" ? x.name : "",
+              amount: Number(x.amount),
+              direction: "in"
+            });
+          });
+        }
+        delete mo.maybankExtraIncome;
+        mo.maybankMovements.forEach(function(x){
           if(typeof x.amount !== "number" || isNaN(x.amount)) x.amount = 0;
           if(typeof x.name !== "string") x.name = "";
+          if(x.direction !== "in" && x.direction !== "out") x.direction = "in";
         });
         if(typeof mo.maybankCurrentBalance !== "number" || isNaN(mo.maybankCurrentBalance)){
           mo.maybankCurrentBalance = null;
@@ -1232,7 +1259,7 @@
       // figure out next expense id counter
       var maxId = 0;
       var maxWdId = 0;
-      var maxExtraId = 0;
+      var maxMbId = 0;
       var maxAsnbId = 0;
       var maxTngId = 0;
       var maxSpId = 0;
@@ -1249,9 +1276,9 @@
           var n2 = parseInt(String(w.id).replace(/[^0-9]/g,""), 10);
           if(!isNaN(n2) && n2 > maxWdId) maxWdId = n2;
         });
-        parsed.months[k].maybankExtraIncome.forEach(function(x){
+        parsed.months[k].maybankMovements.forEach(function(x){
           var n3 = parseInt(String(x.id).replace(/[^0-9]/g,""), 10);
-          if(!isNaN(n3) && n3 > maxExtraId) maxExtraId = n3;
+          if(!isNaN(n3) && n3 > maxMbId) maxMbId = n3;
         });
         parsed.months[k].asnbEntries.forEach(function(x){
           var n4 = parseInt(String(x.id).replace(/[^0-9]/g,""), 10);
@@ -1264,7 +1291,7 @@
       });
       expenseIdCounter = maxId + 1;
       withdrawalIdCounter = maxWdId + 1;
-      extraIncomeIdCounter = maxExtraId + 1;
+      maybankMovementIdCounter = maxMbId + 1;
       asnbIdCounter = maxAsnbId + 1;
       tngIdCounter = maxTngId + 1;
       spIdCounter = maxSpId + 1;
@@ -1416,12 +1443,20 @@
     // and we work backwards to estimate how much was actually spent. Any
     // external income logged as extra suka2 money is added on top, so legit
     // extra income doesn't look like an unexplained surplus.
-    var maybankExtraIncomeList = Array.isArray(monthData.maybankExtraIncome) ? monthData.maybankExtraIncome : [];
-    var maybankExtraIncome = maybankExtraIncomeList.reduce(function(sum, x){
+    var maybankMovements = Array.isArray(monthData.maybankMovements) ? monthData.maybankMovements : [];
+    var maybankTotalIn = 0, maybankTotalOut = 0;
+    maybankMovements.forEach(function(x){
       var amt = Number(x.amount);
-      return sum + (isNaN(amt) ? 0 : amt);
-    }, 0);
-    var maybankAvailableAdjusted = maybankOtherSpending + maybankExtraIncome;
+      if(isNaN(amt)) amt = 0;
+      if(x.direction === "out") maybankTotalOut += amt; else maybankTotalIn += amt;
+    });
+    maybankTotalIn = Math.round(maybankTotalIn * 100) / 100;
+    maybankTotalOut = Math.round(maybankTotalOut * 100) / 100;
+    var maybankNetMovement = Math.round((maybankTotalIn - maybankTotalOut) * 100) / 100;
+    // Baki Maybank Sepatutnya = Available (Awal) + Total Masuk - Total Keluar
+    var maybankExpectedBalance = Math.round((maybankOtherSpending + maybankNetMovement) * 100) / 100;
+    // Available plus everything that came in — the ceiling used to estimate spending
+    var maybankAvailableAdjusted = maybankOtherSpending + maybankTotalIn;
     var hasBalanceEntry = typeof monthData.maybankCurrentBalance === "number" && !isNaN(monthData.maybankCurrentBalance);
     var maybankCurrentBalance = hasBalanceEntry ? monthData.maybankCurrentBalance : null;
     var maybankSpentEstimate = 0;
@@ -1447,7 +1482,11 @@
       remaining: remaining,
       maybankOtherSpending: maybankOtherSpending,
       shortfall: shortfall,
-      maybankExtraIncome: maybankExtraIncome,
+      maybankTotalIn: maybankTotalIn,
+      maybankTotalOut: maybankTotalOut,
+      maybankNetMovement: maybankNetMovement,
+      maybankExpectedBalance: maybankExpectedBalance,
+      maybankReconcileDiff: hasBalanceEntry ? Math.round((maybankCurrentBalance - maybankExpectedBalance) * 100) / 100 : 0,
       maybankAvailableAdjusted: maybankAvailableAdjusted,
       hasBalanceEntry: hasBalanceEntry,
       maybankCurrentBalance: maybankCurrentBalance,
@@ -1605,7 +1644,7 @@
 
       var nameInput = document.createElement("input");
       nameInput.type = "text";
-      nameInput.placeholder = "Untuk apa? (cth: Shopee suka2 / Top-up balik)";
+      nameInput.placeholder = " ";
       nameInput.value = w.name;
       nameInput.addEventListener("input", function(){
         w.name = nameInput.value;
@@ -1638,8 +1677,8 @@
       pocketSelect.className = "pocket-select dir-" + w.direction;
 
       var options = [
-        { value: "out-expenses",  text: "➖ Tolak dari RHB" },
-        { value: "in-expenses",   text: "➕ Tambah ke RHB" }
+        { value: "out-expenses",  text: "⬇️ Keluar" },
+        { value: "in-expenses",   text: "⬆️ Masuk" }
       ];
       options.forEach(function(opt){
         var o = document.createElement("option");
@@ -1694,7 +1733,7 @@
         linkSelect.innerHTML = "";
         var noneOpt = document.createElement("option");
         noneOpt.value = "";
-        noneOpt.textContent = "🔗 Tak link ke expense tertentu";
+        noneOpt.textContent = "🔗 link ke expense";
         linkSelect.appendChild(noneOpt);
         monthData.expenses.forEach(function(exp){
           var o = document.createElement("option");
@@ -1722,29 +1761,65 @@
   }
 
   /* ============================================================
-     RENDER: EXTRA INCOME LIST (income luar untuk suka2)
+     RENDER: MAYBANK MOVEMENT LIST (Pergerakan Maybank)
      ============================================================ */
-  function renderExtraIncomeList(monthData){
-    var list = document.getElementById("extraIncomeList");
-    var empty = document.getElementById("emptyExtraIncome");
+  function renderMaybankMovementList(monthData){
+    var list = document.getElementById("maybankMovementList");
+    var empty = document.getElementById("emptyMaybankMovements");
     list.innerHTML = "";
 
-    if(monthData.maybankExtraIncome.length === 0){
-      empty.style.display = "block";
-    } else {
-      empty.style.display = "none";
-    }
+    empty.style.display = monthData.maybankMovements.length === 0 ? "block" : "none";
 
-    monthData.maybankExtraIncome.forEach(function(x){
+    monthData.maybankMovements.forEach(function(m){
       var row = document.createElement("div");
-      row.className = "expense-row";
+      row.className = "withdrawal-row";
+
+      var top = document.createElement("div");
+      top.className = "wd-top";
 
       var nameInput = document.createElement("input");
       nameInput.type = "text";
-      nameInput.placeholder = "Dari mana? (cth: Bonus kerja)";
-      nameInput.value = x.name;
+      nameInput.placeholder = " ";
+      nameInput.value = m.name;
       nameInput.addEventListener("input", function(){
-        x.name = nameInput.value;
+        m.name = nameInput.value;
+        saveState();
+        renderCalculations();
+      });
+
+      var delBtn = document.createElement("button");
+      delBtn.className = "del-btn";
+      delBtn.setAttribute("aria-label", "Padam catatan");
+      delBtn.textContent = "\u2715";
+      delBtn.addEventListener("click", function(){
+        var monthObj = state.months[state.selectedMonth];
+        var idx = monthObj.maybankMovements.findIndex(function(x){ return x.id === m.id; });
+        if(idx > -1){
+          monthObj.maybankMovements.splice(idx, 1);
+          saveState();
+          renderMaybankMovementList(monthObj);
+          renderCalculations();
+        }
+      });
+
+      top.appendChild(nameInput);
+      top.appendChild(delBtn);
+
+      var bottom = document.createElement("div");
+      bottom.className = "wd-bottom";
+
+      var dirSelect = document.createElement("select");
+      dirSelect.className = "pocket-select dir-" + m.direction;
+      [{ value: "in", text: "\u2795 Masuk" }, { value: "out", text: "\u2796 Keluar" }].forEach(function(opt){
+        var o = document.createElement("option");
+        o.value = opt.value;
+        o.textContent = opt.text;
+        dirSelect.appendChild(o);
+      });
+      dirSelect.value = m.direction;
+      dirSelect.addEventListener("change", function(){
+        m.direction = dirSelect.value;
+        dirSelect.className = "pocket-select dir-" + m.direction;
         saveState();
         renderCalculations();
       });
@@ -1759,33 +1834,21 @@
       amountInput.step = "0.01";
       amountInput.min = "0";
       amountInput.placeholder = "0.00";
-      amountInput.value = x.amount === 0 ? "" : x.amount;
+      amountInput.value = m.amount === 0 ? "" : m.amount;
       amountInput.addEventListener("input", function(){
         var val = parseFloat(amountInput.value);
-        x.amount = isNaN(val) ? 0 : val;
+        m.amount = isNaN(val) ? 0 : val;
         saveState();
         renderCalculations();
       });
       amountWrap.appendChild(amountLabel);
       amountWrap.appendChild(amountInput);
 
-      var delBtn = document.createElement("button");
-      delBtn.className = "del-btn";
-      delBtn.setAttribute("aria-label", "Padam income luar");
-      delBtn.textContent = "✕";
-      delBtn.addEventListener("click", function(){
-        var monthObj = state.months[state.selectedMonth];
-        var idx = monthObj.maybankExtraIncome.findIndex(function(e){ return e.id === x.id; });
-        if(idx > -1){
-          monthObj.maybankExtraIncome.splice(idx, 1);
-          saveState();
-          renderAll();
-        }
-      });
+      bottom.appendChild(dirSelect);
+      bottom.appendChild(amountWrap);
 
-      row.appendChild(nameInput);
-      row.appendChild(amountWrap);
-      row.appendChild(delBtn);
+      row.appendChild(top);
+      row.appendChild(bottom);
       list.appendChild(row);
     });
   }
@@ -1920,7 +1983,7 @@
     totalInId: "asnbTotalIn",
     totalOutId: "asnbTotalOut",
     netId: "asnbNetTotal",
-    namePlaceholder: "Cth: Simpanan bulanan / Dividen"
+    namePlaceholder: " "
   };
 
   var TNG_OPTS = {
@@ -1930,7 +1993,7 @@
     totalInId: "tngTotalIn",
     totalOutId: "tngTotalOut",
     netId: "tngNetTotal",
-    namePlaceholder: "Cth: Reload / Toll / Parking"
+    namePlaceholder: " "
   };
 
   var SP_OPTS = {
@@ -1940,7 +2003,7 @@
     totalInId: "spTotalIn",
     totalOutId: "spTotalOut",
     netId: "spNetTotal",
-    namePlaceholder: "Cth: Simpanan kecemasan / Withdraw"
+    namePlaceholder: " "
   };
 
   /* ============================================================
@@ -2059,23 +2122,35 @@
   function renderMaybankBalanceSection(calc){
     document.getElementById("maybankAvailableRef").textContent = formatRM(calc.maybankOtherSpending);
 
-    var extraIncomeRow = document.getElementById("maybankExtraIncomeRow");
-    var extraIncomeValueEl = document.getElementById("maybankExtraIncomeValue");
-    var adjustedRow = document.getElementById("maybankAdjustedRow");
-    var adjustedValueEl = document.getElementById("maybankAdjustedValue");
+    document.getElementById("maybankTotalIn").textContent = formatRM(calc.maybankTotalIn);
+    document.getElementById("maybankTotalOut").textContent = formatRM(calc.maybankTotalOut);
+    var netEl = document.getElementById("maybankNetMovement");
+    netEl.textContent = (calc.maybankNetMovement > 0 ? "+" : "") + formatRM(calc.maybankNetMovement);
+    netEl.style.color = calc.maybankNetMovement > 0 ? "var(--green)" : (calc.maybankNetMovement < 0 ? "var(--red)" : "");
+    document.getElementById("maybankExpectedBalance").textContent = formatRM(calc.maybankExpectedBalance);
 
-    if(calc.maybankExtraIncome > 0){
-      extraIncomeRow.style.display = "flex";
-      extraIncomeValueEl.textContent = "+ " + formatRM(calc.maybankExtraIncome);
+    // Reconciliation against the manually-entered bank balance
+    var mbReconcileRow = document.getElementById("maybankReconcileRow");
+    var mbReconcileLabel = document.getElementById("maybankReconcileLabel");
+    var mbReconcileValue = document.getElementById("maybankReconcileValue");
+    if(!calc.hasBalanceEntry){
+      mbReconcileRow.style.display = "none";
     } else {
-      extraIncomeRow.style.display = "none";
-    }
-
-    if(calc.maybankExtraIncome > 0){
-      adjustedRow.style.display = "flex";
-      adjustedValueEl.textContent = formatRM(calc.maybankAvailableAdjusted);
-    } else {
-      adjustedRow.style.display = "none";
+      mbReconcileRow.style.display = "flex";
+      var mbDiff = calc.maybankReconcileDiff;
+      if(Math.abs(mbDiff) < 0.01){
+        mbReconcileLabel.textContent = "✅ Padan dengan catatan";
+        mbReconcileValue.textContent = formatRM(calc.maybankExpectedBalance);
+        mbReconcileValue.style.color = "var(--green)";
+      } else if(mbDiff < 0){
+        mbReconcileLabel.textContent = "⚠️ Kurang dari catatan";
+        mbReconcileValue.textContent = "-" + formatRM(Math.abs(mbDiff));
+        mbReconcileValue.style.color = "var(--red)";
+      } else {
+        mbReconcileLabel.textContent = "ℹ️ Lebih dari catatan";
+        mbReconcileValue.textContent = "+" + formatRM(mbDiff);
+        mbReconcileValue.style.color = "var(--amber)";
+      }
     }
 
     var bigResult = document.getElementById("maybankBalanceBig");
@@ -2318,7 +2393,7 @@
     renderInputs();
     renderExpenseList(state.months[state.selectedMonth]);
     renderRhbWithdrawalList(state.months[state.selectedMonth]);
-    renderExtraIncomeList(state.months[state.selectedMonth]);
+    renderMaybankMovementList(state.months[state.selectedMonth]);
     renderTrackerList(state.months[state.selectedMonth], ASNB_OPTS);
     renderTrackerList(state.months[state.selectedMonth], TNG_OPTS);
     renderTrackerList(state.months[state.selectedMonth], SP_OPTS);
@@ -2452,14 +2527,13 @@
       document.getElementById("modalCancel").textContent = "OK";
     });
 
-    document.getElementById("addExtraIncomeBtn").addEventListener("click", function(){
+    document.getElementById("addMaybankMovementBtn").addEventListener("click", function(){
       var monthData = state.months[state.selectedMonth];
-      monthData.maybankExtraIncome.push({ id: "ext" + (extraIncomeIdCounter++), name: "", amount: 0 });
+      monthData.maybankMovements.push({ id: "mb" + (maybankMovementIdCounter++), name: "", amount: 0, direction: "in" });
       saveState();
-      renderExtraIncomeList(monthData);
+      renderMaybankMovementList(monthData);
       renderCalculations();
-      // focus the new entry's name field
-      var rows = document.querySelectorAll("#extraIncomeList .expense-row input[type='text']");
+      var rows = document.querySelectorAll("#maybankMovementList .withdrawal-row input[type='text']");
       if(rows.length) rows[rows.length - 1].focus();
     });
 
@@ -2501,7 +2575,7 @@
       var meta = MONTHS.find(function(m){ return m.key === state.selectedMonth; });
       openModal(
         "Reset " + meta.label + "?",
-        "Are you sure you want to reset this month's data? Income, expenses, RHB movements, Maybank, notes, ASNB, TNG Go+, and ShopeePay Money+ for " + meta.label + " will be cleared. Other months are not affected.",
+        "Are you sure you want to reset this month's data? Income, expenses, RHB movements, Maybank movements, notes, ASNB, TNG Go+, and ShopeePay Money+ for " + meta.label + " will be cleared. Other months are not affected.",
         function(){
           state.months[state.selectedMonth] = emptyMonth();
           saveState();
@@ -2513,10 +2587,15 @@
     document.getElementById("resetAllBtn").addEventListener("click", function(){
       openModal(
         "Reset ALL data?",
-        "This will permanently erase income, expenses, RHB movements, Maybank, notes, ASNB, TNG Go+, and ShopeePay Money+ data for every month from November 2026 to May 2027. This cannot be undone.",
+        "This will permanently erase income, expenses, RHB movements, Maybank movements, notes, ASNB, TNG Go+, and ShopeePay Money+ data for every month from November 2026 to May 2027. This cannot be undone.",
         function(){
           state = defaultState();
           expenseIdCounter = 1;
+          withdrawalIdCounter = 1;
+          maybankMovementIdCounter = 1;
+          asnbIdCounter = 1;
+          tngIdCounter = 1;
+          spIdCounter = 1;
           saveState();
           renderAll();
         }
