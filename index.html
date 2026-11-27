@@ -1381,6 +1381,10 @@
     #expenseList .expense-row{ grid-template-columns: 22px minmax(0, 1fr) 92px 28px; column-gap: 5px; }
     #expenseList .expense-row .del-btn{ width: 28px; height: 28px; }
   }
+
+  .save-indicator.error{ color: #fca5a5; }
+  #expenseList .expense-status .over{ display:inline; }
+  #expenseList .expense-status:not(:empty) .over:not(:first-child){ margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -1389,37 +1393,37 @@
 <div class="lock-screen" id="profileScreen" hidden>
   <div class="lock-card">
     <div class="lock-brand">💸 Money Tracker</div>
-    <p class="lock-tag">Pilih profil. Setiap profil ada data, baki, pergerakan, catatan dan resit sendiri dalam browser ini.</p>
+    <p class="lock-tag">Choose a profile.</p>
     <p class="lock-notice" id="profileNotice" hidden></p>
 
     <div class="lock-profiles" id="profileList"></div>
-    <p class="lock-empty" id="profileEmpty" hidden>Belum ada profil. Cipta profil pertama anda.</p>
+    <p class="lock-empty" id="profileEmpty" hidden>No profiles yet.</p>
 
     <form class="profile-create" id="profileCreateForm" autocomplete="off">
-      <input type="text" id="profileNewName" maxlength="40" placeholder="Nama profil baru" aria-label="Nama profil baru">
-      <button type="submit">＋ Cipta</button>
+      <input type="text" id="profileNewName" maxlength="40" placeholder="New profile name" aria-label="New profile name">
+      <button type="submit">＋ Create</button>
     </form>
 
     <div class="lock-actions">
-      <button type="button" class="lock-secondary" id="backupBtn" hidden>💾 Backup profil ini</button>
-      <label class="lock-secondary file-pick">📂 Pulihkan backup
+      <button type="button" class="lock-secondary" id="backupBtn" hidden>💾 Backup</button>
+      <label class="lock-secondary file-pick">📂 Restore
         <input type="file" id="restoreFile" accept="application/json,.json">
       </label>
     </div>
 
     <form class="lock-form" id="encFileForm" hidden autocomplete="off">
-      <div class="lock-form-title">🔐 Backup disulitkan</div>
+      <div class="lock-form-title">🔐 Encrypted backup</div>
       <p class="lock-note" id="encFileInfo"></p>
-      <input type="password" id="encFilePw" autocomplete="current-password" placeholder="Kata laluan asal" required>
+      <input type="password" id="encFilePw" autocomplete="current-password" placeholder="Original password" required>
       <div class="lock-form-row">
-        <button type="submit" class="lock-primary">Pulihkan</button>
-        <button type="button" class="lock-secondary" id="encFileCancel">Batal</button>
+        <button type="submit" class="lock-primary">Restore</button>
+        <button type="button" class="lock-secondary" id="encFileCancel">Cancel</button>
       </div>
     </form>
 
     <div class="lock-section" id="recoverySection" hidden>
-      <div class="lock-form-title">🔐 Profil disulitkan dari versi sebelum ini</div>
-      <p class="lock-note">Profil ini dibuat dengan kata laluan dan tak boleh dibuka tanpanya. Masukkan kata laluan asal sekali sahaja untuk menukarnya menjadi profil biasa. Salinan disulitkan tidak dipadam kecuali anda memilihnya.</p>
+      <div class="lock-form-title">🔐 Encrypted profiles (previous version)</div>
+      <p class="lock-note">Enter the original password once to convert to a normal profile.</p>
       <div class="import-list" id="recoveryList"></div>
     </div>
 
@@ -1427,9 +1431,8 @@
     <button type="button" class="profile-back" id="profileBackBtn" hidden></button>
 
     <details class="lock-info">
-      <summary>Tentang profil tempatan</summary>
-      <p>Ini pemilih profil tempatan, <b>bukan</b> sistem log masuk yang selamat: sesiapa yang guna browser ini boleh membuka mana-mana profil.</p>
-      <p>Data disimpan dalam browser ini sahaja dan tidak diselaraskan ke peranti atau browser lain. Mengosongkan data browser boleh memadamnya — buat <b>💾 Backup</b> dengan kerap dan simpan fail itu di tempat selamat.</p>
+      <summary>About local profiles</summary>
+      <p>Anyone using this browser can open any profile. Data stays in this browser only and is lost if browser data is cleared. Back up regularly.</p>
     </details>
   </div>
 </div>
@@ -1455,12 +1458,11 @@
 
   <!-- shown only if saved data can't be opened (nothing is overwritten) -->
   <div class="card load-error-card" id="loadErrorPanel" hidden>
-    <h2>⚠️ Data tak dapat dibuka</h2>
+    <h2>⚠️ Data could not be loaded</h2>
     <p class="hint" id="loadErrorMsg"></p>
-    <p class="hint">Tiada data dipadam atau ditulis ganti. Muat turun salinan data asal untuk simpanan, kemudian cuba lagi atau tukar ke profil lain.</p>
     <div class="reset-row">
-      <button class="reset-btn month" id="loadErrorDownload" type="button">⬇️ Download data asal (.json)</button>
-      <button class="reset-btn all" id="loadErrorRetry" type="button">🔄 Cuba lagi</button>
+      <button class="reset-btn month" id="loadErrorDownload" type="button">⬇️ Download data</button>
+      <button class="reset-btn all" id="loadErrorRetry" type="button">🔄 Retry</button>
     </div>
   </div>
 
@@ -1510,8 +1512,6 @@
       <div class="label">Total Commitments</div>
       <div class="value" id="expenseTotal">RM0.00</div>
     </div>
-    <div class="expense-paid-note" id="expensePaidNote"></div>
-    <div class="reserve-banner" id="reserveBanner">🔴 Need RM0.00 in RHB for Reserved Commitments</div>
   </div>
 
   <!-- RHB -->
@@ -1549,8 +1549,7 @@
     </div>
 
     <div class="shortfall-banner" id="rhbExpensesOverBanner" style="display:none;">
-      <div class="big" id="rhbExpensesOverAmount">⚠️ Commitments Reserved lebih guna RM0.00</div>
-      <div class="small">Bayaran melebihi jumlah yang direserve.</div>
+      <div class="big" id="rhbExpensesOverAmount">⚠️ Insufficient balance</div>
     </div>
 
     <div class="maybank-divider" style="margin-top:18px;"></div>
@@ -1581,8 +1580,7 @@
     </div>
 
     <div class="shortfall-banner" id="shortfallBanner" style="display:none;">
-      <div class="big" id="shortfallAmount">⚠️ Short by RM0.00</div>
-      <div class="small">Income tak cukup untuk RHB reserves.</div>
+      <div class="big" id="shortfallAmount">⚠️ Insufficient balance</div>
     </div>
 
     <div class="maybank-divider"></div>
@@ -1640,10 +1638,6 @@
       <div class="value" id="maybankSpentValue">RM0.00</div>
     </div>
 
-    <div class="shortfall-banner" id="maybankSurplusBanner" style="display:none;">
-      <div class="big" id="maybankSurplusAmount">ℹ️ Baki lebih RM0.00</div>
-      <div class="small">Lebih tinggi dari sepatutnya — semak semula.</div>
-    </div>
   </div>
 
   <!-- ASNB -->
@@ -1751,11 +1745,11 @@
           <div class="value" id="ovExpenses">RM0.00</div>
         </div>
         <div class="overall-item">
-          <div class="label">Total Commitments Dibayar</div>
+          <div class="label">Total Commitments Paid</div>
           <div class="value" id="ovPaid">RM0.00</div>
         </div>
         <div class="overall-item">
-          <div class="label">Total Commitments Belum Dibayar</div>
+          <div class="label">Total Commitments Unpaid</div>
           <div class="value" id="ovOutstanding">RM0.00</div>
         </div>
         <div class="overall-item">
@@ -1779,8 +1773,8 @@
     <h2>📝 Catatan (<span id="notesMonthLabel">November 2026</span>)</h2>
     <textarea class="notes-textarea" id="notesInput" placeholder="Tulis catatan di sini…"></textarea>
     <div class="notes-meta">
-      <span class="notes-count" id="notesCount">0 aksara</span>
-      <button class="notes-clear-btn" id="notesClearBtn" type="button">Kosongkan</button>
+      <span class="notes-count" id="notesCount">0 chars</span>
+      <button class="notes-clear-btn" id="notesClearBtn" type="button">Clear</button>
     </div>
   </div>
 
@@ -1800,8 +1794,6 @@
       </div>
     </div>
     <div id="accountBalanceList"></div>
-    <div class="totals-warning" id="totalsWarning" style="display:none;"></div>
-    <div class="totals-footnote">Guna baki sebenar bulan ni, atau yang terkini jika belum diisi.</div>
   </div>
 
   <!-- MONTH ACTIONS -->
@@ -1822,7 +1814,7 @@
   </div>
 
   <footer class="app-footer">
-    Data disimpan dalam browser ini sahaja, berasingan untuk setiap profil (resit dalam IndexedDB). Ini bukan log masuk yang selamat — sesiapa yang guna browser ini boleh menukar profil. Buat backup dengan kerap.
+    Saved in this browser only. Back up regularly.
   </footer>
 
 </div>
@@ -1847,7 +1839,7 @@
     <p id="receiptMeta"></p>
     <div class="receipt-img-wrap">
       <img id="receiptImg" alt="Receipt" style="display:none;">
-      <div class="receipt-img-msg" id="receiptImgMsg">Memuatkan…</div>
+      <div class="receipt-img-msg" id="receiptImgMsg">Loading…</div>
     </div>
     <div class="modal-actions">
       <label class="replace" id="receiptReplaceLabel">🔄 Replace
@@ -2151,6 +2143,7 @@
       showSaved();
     }catch(err){
       console.error("Failed to save data.", err);
+      saveFailed();
     }
   }
 
@@ -2233,7 +2226,7 @@
     }
     if(localStorage.getItem(profileKey(profile.id)) === null){
       localStorage.setItem(profileKey(profile.id), data);
-      if(localStorage.getItem(profileKey(profile.id)) !== data) throw new Error("Data profil tak dapat disahkan selepas disimpan.");
+      if(localStorage.getItem(profileKey(profile.id)) !== data) throw new Error("Data could not be saved.");
     }
     reg = { version: 1, activeId: profile.id, profiles: [profile] };
     writeRegistry(reg);
@@ -2286,7 +2279,7 @@
     var prev = registry.activeId;
     registry.activeId = id;
     try{ writeRegistry(registry); }
-    catch(err){ registry.activeId = prev; showError("Tak dapat tukar profil", err); return false; }
+    catch(err){ registry.activeId = prev; showError("Could not switch profile", err); return false; }
     document.body.classList.remove("picking");
     document.getElementById("profileScreen").hidden = true;
     saveBlocked = true; // nothing is written until the new profile loads
@@ -2296,7 +2289,7 @@
   function createProfile(name){
     if(!registry) return null;
     var id = newProfileId();
-    var p = { id: id, name: cleanProfileName(name, "Profil " + (registry.profiles.length + 1)), receiptNs: id, createdAt: new Date().toISOString() };
+    var p = { id: id, name: cleanProfileName(name, "Profile " + (registry.profiles.length + 1)), receiptNs: id, createdAt: new Date().toISOString() };
     try{
       localStorage.setItem(profileKey(id), JSON.stringify(defaultState())); // empty, never copied
       registry.profiles.push(p);
@@ -2304,7 +2297,7 @@
     }catch(err){
       registry.profiles = registry.profiles.filter(function(x){ return x.id !== id; });
       try{ localStorage.removeItem(profileKey(id)); }catch(e){}
-      showError("Profil tak dapat dibuat", err);
+      showError("Could not create profile", err);
       return null;
     }
     switchProfile(id);
@@ -2317,7 +2310,7 @@
     var old = p.name;
     p.name = cleanProfileName(name, old);
     try{ writeRegistry(registry); }
-    catch(err){ p.name = old; showError("Nama profil tak dapat disimpan", err); }
+    catch(err){ p.name = old; showError("Could not rename profile", err); }
     renderProfileHeader();
   }
 
@@ -2329,7 +2322,7 @@
     var next = Object.assign({}, registry, { activeId: wasActive ? null : registry.activeId, profiles: remaining });
     if(!wasActive) flushPendingEdits();
     try{ writeRegistry(next); }
-    catch(err){ showError("Profil tak dapat dipadam", err); return; }
+    catch(err){ showError("Could not delete profile", err); return; }
     registry = next;
     try{ localStorage.removeItem(profileKey(id)); }catch(e){ console.warn(e); }
     Receipts.clearNamespace(p.receiptNs).then(refreshReceiptControls).catch(function(err){ console.warn(err); });
@@ -2338,7 +2331,7 @@
       ["expenseList", "rhbWithdrawalList", "maybankMovementList", "asnbList", "tngList", "spList", "accountBalanceList", "monthTabs"]
         .forEach(function(x){ var el = document.getElementById(x); if(el) el.innerHTML = ""; });
       renderProfileHeader();
-      showProfileScreen("Profil \"" + p.name + "\" telah dipadam. Pilih atau cipta profil.");
+      showProfileScreen();
     } else renderProfileHeader();
   }
 
@@ -2349,9 +2342,7 @@
     state = null;
     document.body.classList.add("load-error");
     document.getElementById("loadErrorPanel").hidden = false;
-    document.getElementById("loadErrorMsg").textContent =
-      (profile ? "Profil \"" + profile.name + "\": " : "Pemindahan data ke profil gagal: ") +
-      ((err && err.message) ? err.message : String(err));
+    document.getElementById("loadErrorMsg").textContent = profile ? "Profile: " + profile.name : "";
     renderProfileHeader();
     console.error(err);
   }
@@ -2428,7 +2419,7 @@
 
   function exportProfileBackup(){
     var p = activeProfile();
-    if(!p || !state) return Promise.reject(new Error("Tiada profil dibuka."));
+    if(!p || !state) return Promise.reject(new Error("No profile open."));
     flushPendingEdits();
     var data = JSON.parse(localStorage.getItem(profileKey(p.id)));
     return Receipts.init().catch(function(){}).then(function(){
@@ -2458,7 +2449,7 @@
     // opts: { wantId, name, data (object), receipts: [{key, type, name, savedAt, bytes}], extra }
     var st;
     try{ st = normalizeState(JSON.parse(JSON.stringify(opts.data))); }
-    catch(e){ return Promise.reject(new Error("Data dalam backup tak dapat dibaca: " + e.message)); }
+    catch(e){ return Promise.reject(new Error("Backup could not be read.")); }
     var id = (typeof opts.wantId === "string" && /^[A-Za-z0-9_-]{1,40}$/.test(opts.wantId) &&
               !findProfile(opts.wantId) && localStorage.getItem(profileKey(opts.wantId)) === null) ? opts.wantId : newProfileId();
     var ns = id, ok = 0, skipped = 0;
@@ -2473,8 +2464,8 @@
     });
     return chain.then(function(){
       localStorage.setItem(profileKey(id), dataText);
-      if(localStorage.getItem(profileKey(id)) !== dataText) throw new Error("Data profil tak dapat disahkan selepas disimpan.");
-      var p = Object.assign({ id: id, name: cleanProfileName(opts.name, "Profil dipulihkan"), receiptNs: ns, createdAt: new Date().toISOString() }, opts.extra || {});
+      if(localStorage.getItem(profileKey(id)) !== dataText) throw new Error("Data could not be saved.");
+      var p = Object.assign({ id: id, name: cleanProfileName(opts.name, "Restored profile"), receiptNs: ns, createdAt: new Date().toISOString() }, opts.extra || {});
       registry.profiles.push(p);
       try{ writeRegistry(registry); }
       catch(e){ registry.profiles.pop(); throw e; }
@@ -2491,7 +2482,7 @@
 
   function restorePlainBackup(obj){
     if(!obj || obj.type !== "money-tracker-profile-backup" || !obj.data || typeof obj.data.months !== "object"){
-      return Promise.reject(new Error("Ini bukan fail backup profil Money Tracker."));
+      return Promise.reject(new Error("Not a Money Tracker backup file."));
     }
     var receipts = (obj.receipts || []).map(function(r){
       var bytes = null;
@@ -2540,7 +2531,7 @@
       return crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ToBytes(ivB64), additionalData: te.encode(aad) }, key, ct);
     }
     function decryptText(key, blob, aad){
-      if(!blob || typeof blob.iv !== "string" || typeof blob.ct !== "string") return Promise.reject(new Error("Data disulitkan tidak lengkap."));
+      if(!blob || typeof blob.iv !== "string" || typeof blob.ct !== "string") return Promise.reject(new Error("Backup could not be read."));
       return decryptBytes(key, blob.iv, b64ToBytes(blob.ct), aad).then(function(pt){ return td.decode(pt); });
     }
 
@@ -2584,7 +2575,7 @@
         key = k;
         return decryptText(key, src.verifier, "verify").then(function(t){
           if(t !== VERIFY_TEXT) throw new Error("x");
-        }, function(){ var e = new Error("Kata laluan salah."); e.wrongPassword = true; throw e; });
+        }, function(){ var e = new Error("Wrong password."); e.wrongPassword = true; throw e; });
       }).then(function(){
         return decryptText(key, src.dataBlob, "state");
       }).then(function(text){
@@ -2658,9 +2649,9 @@
   })();
 
   function recoverEncrypted(kind, srcObj, password){
-    if(!Vault.cryptoAvailable()) return Promise.reject(new Error("Browser ini tidak menyokong Web Crypto, jadi profil disulitkan tak dapat dibuka di sini. Cuba Chrome, Edge, Firefox atau Safari terkini."));
+    if(!Vault.cryptoAvailable()) return Promise.reject(new Error("This browser cannot open encrypted profiles."));
     var src = kind === "vault" ? Vault.sourceFromVault(srcObj) : Vault.sourceFromFile(srcObj);
-    if(!src.dataBlob) return Promise.reject(new Error("Data profil disulitkan tidak dijumpai."));
+    if(!src.dataBlob) return Promise.reject(new Error("Encrypted data not found."));
     return Vault.decryptProfile(src, password).then(function(r){
       return addRecoveredProfile({
         wantId: kind === "vault" ? srcObj.id : null,
@@ -2677,9 +2668,9 @@
   function profileInitial(name){ var ch = Array.from(String(name || "?").trim())[0] || "?"; return ch.toUpperCase(); }
   function renderProfileHeader(){
     var p = activeProfile();
-    document.getElementById("profileBtnName").textContent = p ? p.name : "Pilih profil";
+    document.getElementById("profileBtnName").textContent = p ? p.name : "Choose profile";
     document.getElementById("profileAvatar").textContent = p ? profileInitial(p.name) : "?";
-    document.getElementById("profileBtn").title = p ? "Profil: " + p.name + " (tukar / urus)" : "Pilih profil";
+    document.getElementById("profileBtn").title = p ? "Profile: " + p.name : "Choose profile";
     document.title = p ? "Money Tracker — " + p.name : "Money Tracker";
   }
   function setProfileStatus(text, bad){
@@ -2718,7 +2709,7 @@
     document.getElementById("profileEmpty").hidden = profiles.length > 0;
     var active = activeProfile();
     document.getElementById("profileBackBtn").hidden = !(active && state);
-    document.getElementById("profileBackBtn").textContent = active ? "← Kembali ke " + active.name : "";
+    document.getElementById("profileBackBtn").textContent = active ? "← Back to " + active.name : "";
     document.getElementById("backupBtn").hidden = !(active && state);
 
     profiles.forEach(function(p){
@@ -2730,9 +2721,9 @@
         var form = document.createElement("form");
         form.className = "profile-rename";
         var inp = document.createElement("input");
-        inp.type = "text"; inp.maxLength = 40; inp.value = p.name; inp.setAttribute("aria-label", "Nama profil");
-        var ok = document.createElement("button"); ok.type = "submit"; ok.className = "profile-mini primary"; ok.textContent = "Simpan";
-        var cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "profile-mini"; cancel.textContent = "Batal";
+        inp.type = "text"; inp.maxLength = 40; inp.value = p.name; inp.setAttribute("aria-label", "Profile name");
+        var ok = document.createElement("button"); ok.type = "submit"; ok.className = "profile-mini primary"; ok.textContent = "Save";
+        var cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "profile-mini"; cancel.textContent = "Cancel";
         form.addEventListener("submit", function(e){ e.preventDefault(); renameProfile(p.id, inp.value); profileEditing = null; renderProfileScreen(); });
         cancel.addEventListener("click", function(){ profileEditing = null; renderProfileScreen(); });
         form.appendChild(inp); form.appendChild(ok); form.appendChild(cancel);
@@ -2749,25 +2740,25 @@
       var av = document.createElement("span"); av.className = "profile-avatar"; av.textContent = profileInitial(p.name);
       var nm = document.createElement("span"); nm.className = "lock-name"; nm.textContent = p.name;
       pick.appendChild(av); pick.appendChild(nm);
-      if(isActive){ var tag = document.createElement("span"); tag.className = "profile-tag"; tag.textContent = "Dibuka"; pick.appendChild(tag); }
+      if(isActive){ var tag = document.createElement("span"); tag.className = "profile-tag"; tag.textContent = "Open"; pick.appendChild(tag); }
       pick.addEventListener("click", function(){
         if(!(isActive)){ if(!switchProfile(p.id)) return; }
         closeProfileScreen();
       });
       var ren = document.createElement("button");
       ren.type = "button"; ren.className = "profile-icon"; ren.textContent = "✎";
-      ren.title = "Tukar nama"; ren.setAttribute("aria-label", "Tukar nama " + p.name);
+      ren.title = "Rename"; ren.setAttribute("aria-label", "Rename " + p.name);
       ren.addEventListener("click", function(){ profileEditing = p.id; renderProfileScreen(); });
       var del = document.createElement("button");
       del.type = "button"; del.className = "profile-icon danger"; del.textContent = "🗑";
-      del.title = "Padam profil"; del.setAttribute("aria-label", "Padam " + p.name);
+      del.title = "Delete profile"; del.setAttribute("aria-label", "Delete " + p.name);
       del.addEventListener("click", function(){
         var n = Receipts.countForNamespace(p.receiptNs);
         openModal(
-          "Padam profil \"" + p.name + "\"?",
-          "Semua data profil ini — income, commitments, pergerakan semua akaun, baki, catatan dan " + n + " gambar resit — akan dipadam terus dari browser ini. Tindakan ini tak boleh diundur.\n\nProfil lain tidak terjejas. Tip: buat backup dahulu.",
+          "Delete profile \"" + p.name + "\"?",
+          "All data and " + n + " receipt(s) in this profile will be permanently deleted.",
           function(){ deleteProfile(p.id); renderProfileScreen(); },
-          { confirmText: "Padam Profil" }
+          { confirmText: "Delete Profile" }
         );
       });
       line.appendChild(pick); line.appendChild(ren); line.appendChild(del);
@@ -2791,8 +2782,8 @@
       var nm = document.createElement("div"); nm.className = "import-name"; nm.textContent = "🔐 " + vp.name;
       var meta = document.createElement("div"); meta.className = "import-meta";
       meta.textContent = recovered.length
-        ? "✓ Sudah dipulihkan sebagai \"" + recovered.map(function(p){ return p.name; }).join("\", \"") + "\". Salinan disulitkan masih ada."
-        : "Masukkan kata laluan asal profil ini untuk memulihkannya sebagai profil biasa.";
+        ? "Recovered as \"" + recovered.map(function(p){ return p.name; }).join("\", \"") + "\""
+        : "";
       if(recovered.length) meta.className = "import-meta good";
       info.appendChild(nm); info.appendChild(meta);
       row.appendChild(info);
@@ -2800,14 +2791,14 @@
         var form = document.createElement("form");
         form.className = "recover-form";
         var pw = document.createElement("input");
-        pw.type = "password"; pw.autocomplete = "current-password"; pw.placeholder = "Kata laluan asal";
-        pw.setAttribute("aria-label", "Kata laluan asal " + vp.name);
-        var go = document.createElement("button"); go.type = "submit"; go.className = "profile-mini primary"; go.textContent = "Pulihkan";
+        pw.type = "password"; pw.autocomplete = "current-password"; pw.placeholder = "Original password";
+        pw.setAttribute("aria-label", "Original password for " + vp.name);
+        var go = document.createElement("button"); go.type = "submit"; go.className = "profile-mini primary"; go.textContent = "Recover";
         form.appendChild(pw); form.appendChild(go);
         form.addEventListener("submit", function(e){
           e.preventDefault();
           go.disabled = pw.disabled = true;
-          setProfileStatus("Memulihkan \"" + vp.name + "\"…");
+          setProfileStatus("Recovering…");
           recoverEncrypted("vault", vp, pw.value).then(function(r){
             pw.value = "";
             afterRecovery(r, vp);
@@ -2819,7 +2810,7 @@
         row.appendChild(form);
       } else {
         var del = document.createElement("button");
-        del.type = "button"; del.className = "profile-mini"; del.textContent = "Padam salinan disulitkan";
+        del.type = "button"; del.className = "profile-mini"; del.textContent = "Delete encrypted copy";
         del.addEventListener("click", function(){ confirmRemoveVault(vp); });
         row.appendChild(del);
       }
@@ -2827,22 +2818,13 @@
     });
   }
 
-  function afterRecovery(r, vp){
-    var msg = "\"" + r.profile.name + "\" kini profil biasa (" + r.receipts + " gambar resit dipulihkan" + (r.skipped ? ", " + r.skipped + " dilangkau" : "") + ").";
-    if(vp){
-      openModal("✓ Profil dipulihkan",
-        msg + "\n\nSalinan lama yang disulitkan masih ada dalam browser ini. Padamkan sekarang? (Profil yang dipulihkan tidak terjejas.)",
-        function(){ Vault.removeProfile(vp); },
-        { confirmText: "Padam salinan disulitkan", cancelText: "Simpan dulu" });
-    } else {
-      openModal("✓ Profil dipulihkan", msg, null, { hideConfirm: true, cancelText: "OK" });
-    }
-  }
+  function afterRecovery(){ setProfileStatus(""); } // the recovered profile opens directly
+
   function confirmRemoveVault(vp){
-    openModal("Padam salinan disulitkan \"" + vp.name + "\"?",
-      "Salinan lama yang disulitkan (data dan gambar resit) akan dipadam dari browser ini. Profil biasa yang sudah dipulihkan tidak terjejas. Tindakan ini tak boleh diundur.",
+    openModal("Delete encrypted copy of \"" + vp.name + "\"?",
+      "The encrypted copy will be permanently deleted. The recovered profile is not affected.",
       function(){ Vault.removeProfile(vp).then(renderRecoverySection); },
-      { confirmText: "Padam salinan disulitkan" });
+      { confirmText: "Delete" });
   }
 
   function wireProfileEvents(){
@@ -2851,12 +2833,12 @@
     document.getElementById("profileCreateForm").addEventListener("submit", function(e){
       e.preventDefault();
       var input = document.getElementById("profileNewName");
-      if(!input.value.trim()){ setProfileStatus("Masukkan nama profil.", true); input.focus(); return; }
+      if(!input.value.trim()){ setProfileStatus("Enter a profile name.", true); input.focus(); return; }
       if(createProfile(input.value)){ input.value = ""; closeProfileScreen(); }
     });
     document.getElementById("backupBtn").addEventListener("click", function(){
       exportProfileBackup().then(function(n){
-        setProfileStatus("✓ Backup \"" + activeProfile().name + "\" dimuat turun (" + n + " gambar resit). Simpan fail ini di tempat selamat — ia tidak disulitkan.");
+        setProfileStatus("");
       }, function(err){ setProfileStatus(err.message, true); });
     });
     document.getElementById("restoreFile").addEventListener("change", function(e){
@@ -2868,20 +2850,20 @@
         if(obj && obj.type === "money-tracker-encrypted-backup"){
           pendingEncryptedFile = obj;
           document.getElementById("encFileForm").hidden = false;
-          document.getElementById("encFileInfo").textContent = "Backup disulitkan \"" + ((obj.profile && obj.profile.name) || "") + "\" · " + (obj.receipts || []).length + " resit. Masukkan kata laluan semasa backup dibuat.";
+          document.getElementById("encFileInfo").textContent = (obj.profile && obj.profile.name) || "";
           document.getElementById("encFilePw").focus();
           setProfileStatus("");
           return;
         }
-        setProfileStatus("Memulihkan…");
+        setProfileStatus("Restoring…");
         return restorePlainBackup(obj).then(function(r){ afterRecovery(r, null); setProfileStatus(""); });
-      }).catch(function(err){ setProfileStatus("Tak dapat dipulihkan: " + err.message, true); });
+      }).catch(function(err){ setProfileStatus("Could not restore: " + err.message, true); });
     });
     document.getElementById("encFileForm").addEventListener("submit", function(e){
       e.preventDefault();
       if(!pendingEncryptedFile) return;
       var pwEl = document.getElementById("encFilePw");
-      setProfileStatus("Memulihkan…");
+      setProfileStatus("Restoring…");
       recoverEncrypted("file", pendingEncryptedFile, pwEl.value).then(function(r){
         pwEl.value = ""; pendingEncryptedFile = null;
         document.getElementById("encFileForm").hidden = true;
@@ -2898,8 +2880,24 @@
     document.getElementById("loadErrorRetry").addEventListener("click", function(){ location.reload(); });
   }
 
+  function flashIndicator(text){
+    var el = document.getElementById("saveIndicator");
+    el.classList.remove("error");
+    el.textContent = text;
+    el.classList.add("show");
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){ el.classList.remove("show"); el.textContent = "✓ Saved"; }, 1500);
+  }
+  function saveFailed(){
+    var el = document.getElementById("saveIndicator");
+    if(saveTimer) clearTimeout(saveTimer);
+    el.textContent = "⚠️ Data could not be saved";
+    el.classList.add("show", "error");
+  }
   function showSaved(){
     var el = document.getElementById("saveIndicator");
+    el.classList.remove("error");
+    el.textContent = "✓ Saved";
     el.classList.add("show");
     if(saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(function(){ el.classList.remove("show"); }, 1200);
@@ -2990,7 +2988,7 @@
       t.overpaid += overpaid;
       if(status === "paid") t.paidCount++;
       MOVE_ACCOUNTS.forEach(function(a){ t.byAccount[a.key] += paidBy[a.key]; });
-      if(overpaid > 0) overpaidList.push({ name: e.name || "(Tiada nama)", over: overpaid });
+      if(overpaid > 0) overpaidList.push({ name: e.name || "(No name)", over: overpaid });
     });
     t.total = r2(t.total); t.paid = r2(t.paid); t.outstanding = r2(t.outstanding);
     t.paidTick = r2(t.paidTick); t.overpaid = r2(t.overpaid);
@@ -3126,7 +3124,7 @@
     function open(){
       if(dbPromise) return dbPromise;
       dbPromise = new Promise(function(resolve, reject){
-        if(!supported()){ reject(new Error("IndexedDB tidak disokong dalam browser ini.")); return; }
+        if(!supported()){ reject(new Error("Receipts are not supported in this browser.")); return; }
         var req;
         try{ req = indexedDB.open(DB_NAME, 1); }catch(e){ reject(e); return; }
         req.onupgradeneeded = function(){
@@ -3138,7 +3136,7 @@
         };
         req.onsuccess = function(){ resolve(req.result); };
         req.onerror = function(){ reject(req.error || new Error("IndexedDB open failed")); };
-        req.onblocked = function(){ reject(new Error("IndexedDB blocked — tutup tab lain yang buka tracker ini.")); };
+        req.onblocked = function(){ reject(new Error("Receipt storage is busy. Close other tracker tabs.")); };
       });
       dbPromise.catch(function(){ dbPromise = null; });
       return dbPromise;
@@ -3220,8 +3218,8 @@
     }
 
     function save(month, account, txId, file){
-      if(!file) return Promise.reject(new Error("Tiada fail dipilih."));
-      if(file.type && !/^image\//.test(file.type)) return Promise.reject(new Error("Sila pilih fail gambar."));
+      if(!file) return Promise.reject(new Error("No file selected."));
+      if(file.type && !/^image\//.test(file.type)) return Promise.reject(new Error("Please choose an image."));
       var key = makeKey(month, account, txId);
       return compress(file).then(function(blob){
         return readAsArrayBuffer(blob).then(function(buf){
@@ -3426,7 +3424,7 @@
       var dueDateBtn = document.createElement("button");
       dueDateBtn.type = "button";
       dueDateBtn.className = "due-date-btn";
-      dueDateBtn.title = "Tukar due date";
+      dueDateBtn.title = "Change due date";
 
       var dueWrap = document.createElement("div");
       dueWrap.className = "due-input-wrap";
@@ -3438,7 +3436,7 @@
       var dueCancel = document.createElement("button");
       dueCancel.type = "button";
       dueCancel.className = "due-cancel";
-      dueCancel.textContent = "Batal";
+      dueCancel.textContent = "Cancel";
 
       var dueBadge = document.createElement("span");
       dueBadge.className = "due-badge";
@@ -3446,8 +3444,8 @@
       var dueClear = document.createElement("button");
       dueClear.type = "button";
       dueClear.className = "due-clear";
-      dueClear.setAttribute("aria-label", "Buang due date");
-      dueClear.title = "Buang due date (commitment tidak dipadam)";
+      dueClear.setAttribute("aria-label", "Remove due date");
+      dueClear.title = "Remove due date";
       dueClear.textContent = "✕";
 
       function syncDueUi(){
@@ -3525,22 +3523,15 @@
       if(badge){
         badge.className = "due-badge";
         badge.textContent = "";
-        if(due){
-          if(i.status === "paid"){
-            badge.classList.add("due-paid");
-            badge.textContent = "✓ Paid";
-          } else if(due < today){
+        // The checkbox already shows "paid"; only flag what needs attention.
+        if(due && i.status !== "paid"){
+          if(due < today){
             overdue = true;
             badge.classList.add("due-overdue");
-            var late = daysBetween(due, today);
-            badge.textContent = "⚠️ Overdue" + (late > 0 ? " · " + late + " hari" : "");
+            badge.textContent = "Overdue";
           } else if(due === today){
             badge.classList.add("due-today");
-            badge.textContent = "⏰ Due today";
-          } else {
-            badge.classList.add("due-upcoming");
-            var ahead = daysBetween(today, due);
-            badge.textContent = "🗓 Upcoming · " + ahead + " hari";
+            badge.textContent = "Due Today";
           }
         }
       }
@@ -3553,31 +3544,21 @@
       box.classList.toggle("partial", i.status === "partial");
       box.classList.toggle("linked", i.linked);
       box.textContent = i.status === "paid" ? "✓" : (i.status === "partial" ? "–" : "");
-      box.title = (i.linked && i.paidTick <= 0 && i.status === "paid") ? "Lunas ikut pergerakan yang di-link"
-        : (i.paidTick > 0 ? "Tanda lunas (klik untuk buang)" : "Tandakan dah bayar");
+      box.title = "Mark as paid";
 
       st.className = "expense-status" + (i.status === "paid" ? " st-paid" : (i.status === "partial" ? " st-partial" : ""));
       st.innerHTML = "";
       if(i.status === "partial"){
-        st.appendChild(document.createTextNode("Dibayar " + formatRM(i.paid) + " · Baki " + formatRM(i.outstanding)));
-      } else if(i.status === "paid" && i.paidLinked > 0 && i.paidTick > 0){
-        st.appendChild(document.createTextNode("Lunas · " + formatRM(i.paidLinked) + " ikut link + " + formatRM(i.paidTick) + " ditanda"));
+        st.appendChild(document.createTextNode("Paid " + formatRM(i.paid) + " · Balance " + formatRM(i.outstanding)));
       }
       if(i.overpaid > 0){
         var over = document.createElement("span");
         over.className = "over";
-        over.textContent = "⚠️ Bayaran yang di-link melebihi commitment sebanyak " + formatRM(i.overpaid) + " — lebihan tak dikira sebagai bayaran commitment.";
+        over.textContent = "⚠️ Payment exceeds commitment";
         st.appendChild(over);
       }
     });
 
-    var paidNote = document.getElementById("expensePaidNote");
-    if(monthData.expenses.length === 0){
-      paidNote.textContent = "";
-    } else {
-      var T = calc.ex.totals;
-      paidNote.textContent = "✓ " + T.paidCount + "/" + monthData.expenses.length + " lunas · Dibayar " + formatRM(T.paid) + " · Belum dibayar " + formatRM(T.outstanding);
-    }
   }
 
   /* ============================================================
@@ -3586,7 +3567,7 @@
      optional expense link, and receipt controls.
      ============================================================ */
   function linkOptionText(exp, info){
-    var t = "🔗 " + (exp.name || "(Tiada nama)") + " — " + formatRM(exp.amount);
+    var t = "🔗 " + (exp.name || "(No name)") + " — " + formatRM(exp.amount);
     if(info && info.linked && info.outstanding > 0) t += " (baki " + formatRM(info.outstanding) + ")";
     return t;
   }
@@ -3596,7 +3577,7 @@
     sel.innerHTML = "";
     var noneOpt = document.createElement("option");
     noneOpt.value = "";
-    noneOpt.textContent = "Pilih commitment…";
+    noneOpt.textContent = "Choose commitment…";
     sel.appendChild(noneOpt);
     monthData.expenses.forEach(function(exp){
       var o = document.createElement("option");
@@ -3621,17 +3602,17 @@
     main.className = "mc-chip-main";
     var name = document.createElement("div");
     name.className = "mc-chip-name";
-    name.textContent = "🔗 " + (exp.name || "(Tiada nama)");
+    name.textContent = "🔗 " + (exp.name || "(No name)");
     name.title = exp.name || "";
     var meta = document.createElement("div");
     meta.className = "mc-chip-meta";
     var linkedPart = document.createElement("span");
-    linkedPart.textContent = "Link " + formatRM(i.paidLinked) + " / " + formatRM(i.amount);
+    linkedPart.textContent = formatRM(i.paidLinked) + " / " + formatRM(i.amount);
     meta.appendChild(linkedPart);
     if(i.outstanding > 0){
       var remPart = document.createElement("span");
       remPart.className = "mc-chip-rem";
-      remPart.textContent = "Baki " + formatRM(i.outstanding);
+      remPart.textContent = "Balance " + formatRM(i.outstanding);
       meta.appendChild(remPart);
     }
     main.appendChild(name);
@@ -3640,8 +3621,8 @@
     var unlink = document.createElement("button");
     unlink.type = "button";
     unlink.className = "mc-chip-unlink";
-    unlink.setAttribute("aria-label", "Buang link");
-    unlink.title = "Buang link";
+    unlink.setAttribute("aria-label", "Unlink");
+    unlink.title = "Unlink";
     unlink.textContent = "Unlink";
     chip.appendChild(main);
     chip.appendChild(unlink);
@@ -3677,8 +3658,8 @@
       var delBtn = document.createElement("button");
       delBtn.type = "button";
       delBtn.className = "mc-del";
-      delBtn.setAttribute("aria-label", "Padam catatan");
-      delBtn.title = "Padam catatan";
+      delBtn.setAttribute("aria-label", "Delete");
+      delBtn.title = "Delete";
       delBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
       delBtn.addEventListener("click", function(){
         var monthObj = state.months[monthKey];
@@ -3803,18 +3784,6 @@
         picker.hidden = true;
         syncLinkUi();
         renderCalculations();
-        if(m.linkedExpenseId){
-          var i = calcExpenses(monthData).info[m.linkedExpenseId];
-          if(i && i.overpaid > 0){
-            openModal(
-              "⚠️ Bayaran melebihi commitment",
-              "Jumlah pergerakan yang di-link ke commitment ini dah melebihi amaun commitment sebanyak " + formatRM(i.overpaid) +
-                ".\n\nCommitment hanya dikira " + formatRM(i.amount) + " — lebihan tak dikira sebagai bayaran commitment, tapi baki akaun masih ikut pergerakan sebenar.",
-              null,
-              { hideConfirm: true, cancelText: "OK" }
-            );
-          }
-        }
       });
       linkBtn.addEventListener("click", function(){
         fillLinkSelect(linkSelect, monthData, calcExpenses(monthData).info);
@@ -3864,7 +3833,7 @@
   }
 
   function showError(title, err){
-    openModal(title, (err && err.message) ? err.message : String(err || "Ralat tidak diketahui."), null, { hideConfirm: true, cancelText: "OK" });
+    openModal(title, (err && err.message) ? err.message : String(err || "Unknown error."), null, { hideConfirm: true, cancelText: "OK" });
   }
 
   function fillReceiptControl(ctrl){
@@ -3902,13 +3871,13 @@
       var file = input.files && input.files[0];
       if(!file) return;
       label.classList.add("busy");
-      label.firstChild.textContent = "Menyimpan…";
+      label.firstChild.textContent = "Saving…";
       Receipts.save(monthKey, accountKey, txId, file).then(function(){
         showSaved();
         fillReceiptControl(ctrl);
       }).catch(function(err){
         fillReceiptControl(ctrl);
-        showError("Resit tak dapat disimpan", err);
+        showError("Receipt could not be saved", err);
       });
     });
     label.appendChild(input);
@@ -3928,20 +3897,20 @@
     img.style.display = "none";
     img.removeAttribute("src");
     msg.style.display = "block";
-    msg.textContent = "Memuatkan…";
+    msg.textContent = "Loading…";
     var key = receiptView.key;
     Receipts.get(key).then(function(rec){
       if(receiptView.key !== key) return;
-      if(!rec){ msg.textContent = "Resit tidak dijumpai."; return; }
+      if(!rec){ msg.textContent = "Receipt not found."; return; }
       var blob = new Blob([rec.data], { type: rec.type || "image/jpeg" });
       receiptView.url = URL.createObjectURL(blob);
       img.onload = function(){ msg.style.display = "none"; img.style.display = "block"; };
-      img.onerror = function(){ msg.textContent = "Format gambar ini tak dapat dipaparkan oleh browser (resit masih disimpan)."; };
+      img.onerror = function(){ msg.textContent = "This image can't be displayed."; };
       img.src = receiptView.url;
       var saved = new Date(rec.savedAt);
       document.getElementById("receiptMeta").textContent = receiptView.metaText +
-        "\nDisimpan: " + (isNaN(saved) ? "-" : saved.toLocaleString("en-MY")) + " · " + Math.round(rec.size / 1024) + " KB";
-    }).catch(function(err){ msg.textContent = "Ralat: " + (err && err.message ? err.message : err); });
+        "\nSaved: " + (isNaN(saved) ? "-" : saved.toLocaleString("en-MY")) + " · " + Math.round(rec.size / 1024) + " KB";
+    }).catch(function(err){ msg.textContent = "Error: " + (err && err.message ? err.message : err); });
   }
 
   function openReceiptModal(monthKey, accountKey, txId){
@@ -3949,7 +3918,7 @@
     var t = findTx(monthKey, accountKey, txId);
     receiptView.key = Receipts.makeKey(monthKey, accountKey, txId);
     receiptView.month = monthKey; receiptView.account = accountKey; receiptView.tx = txId;
-    receiptView.metaText = acct.name + " · " + ((t && t.name) || "(Tiada nama)") +
+    receiptView.metaText = acct.name + " · " + ((t && t.name) || "(No name)") +
       (t ? " · " + (t.direction === "out" ? "Keluar " : "Masuk ") + formatRM(t.amount) : "") + " · " + monthMeta(monthKey).label;
     document.getElementById("receiptTitle").textContent = "🧾 Receipt";
     document.getElementById("receiptMeta").textContent = receiptView.metaText;
@@ -4000,8 +3969,6 @@
     // expense total (each expense counted once) + what's still unpaid
     document.getElementById("expenseTotal").textContent = formatRM(calc.expensesReserved);
     var stillNeeded = Math.max(calc.expensesStillNeeded, 0);
-    document.getElementById("reserveBanner").textContent =
-      "🔴 Need " + formatRM(stillNeeded) + " in RHB for Unpaid/Unreleased Commitments";
     updateExpenseStatuses(monthData, calc);
 
     document.getElementById("rhbExpensesReserved").textContent = formatRM(Math.max(calc.expensesStillNeeded, 0));
@@ -4011,7 +3978,7 @@
     var shortfallBanner = document.getElementById("shortfallBanner");
     if(calc.shortfall > 0){
       shortfallBanner.style.display = "block";
-      document.getElementById("shortfallAmount").textContent = "⚠️ Short by " + formatRM(calc.shortfall);
+      document.getElementById("shortfallAmount").textContent = "⚠️ Insufficient balance · Short " + formatRM(calc.shortfall);
     } else {
       shortfallBanner.style.display = "none";
     }
@@ -4043,7 +4010,7 @@
     var expOverBanner = document.getElementById("rhbExpensesOverBanner");
     if(calc.expensesOverBy > 0){
       expOverBanner.style.display = "block";
-      document.getElementById("rhbExpensesOverAmount").textContent = "⚠️ Commitments Reserved lebih guna " + formatRM(calc.expensesOverBy);
+      document.getElementById("rhbExpensesOverAmount").textContent = "⚠️ Insufficient balance · " + formatRM(calc.expensesOverBy) + " over";
     } else {
       expOverBanner.style.display = "none";
     }
@@ -4058,15 +4025,15 @@
     reconcileRow.style.display = "flex";
     var diff = calc.rhbReconcileDiff;
     if(Math.abs(diff) < 0.01){
-      reconcileLabel.textContent = "✅ Padan dengan catatan";
+      reconcileLabel.textContent = "Matches records";
       reconcileValue.textContent = formatRM(calc.computedRhbBalance);
       reconcileValue.style.color = "var(--green)";
     } else if(diff < 0){
-      reconcileLabel.textContent = "⚠️ Kurang dari catatan";
+      reconcileLabel.textContent = "Below records";
       reconcileValue.textContent = "-" + formatRM(Math.abs(diff));
       reconcileValue.style.color = "var(--red)";
     } else {
-      reconcileLabel.textContent = "ℹ️ Lebih dari catatan";
+      reconcileLabel.textContent = "Above records";
       reconcileValue.textContent = "+" + formatRM(diff);
       reconcileValue.style.color = "var(--amber)";
     }
@@ -4093,15 +4060,15 @@
       mbReconcileRow.style.display = "flex";
       var mbDiff = calc.maybankReconcileDiff;
       if(Math.abs(mbDiff) < 0.01){
-        mbReconcileLabel.textContent = "✅ Padan dengan catatan";
+        mbReconcileLabel.textContent = "Matches records";
         mbReconcileValue.textContent = formatRM(calc.maybankExpectedBalance);
         mbReconcileValue.style.color = "var(--green)";
       } else if(mbDiff < 0){
-        mbReconcileLabel.textContent = "⚠️ Kurang dari catatan";
+        mbReconcileLabel.textContent = "Below records";
         mbReconcileValue.textContent = "-" + formatRM(Math.abs(mbDiff));
         mbReconcileValue.style.color = "var(--red)";
       } else {
-        mbReconcileLabel.textContent = "ℹ️ Lebih dari catatan";
+        mbReconcileLabel.textContent = "Above records";
         mbReconcileValue.textContent = "+" + formatRM(mbDiff);
         mbReconcileValue.style.color = "var(--amber)";
       }
@@ -4110,7 +4077,6 @@
     var bigResult = document.getElementById("maybankBalanceBig");
     var bigNote = document.getElementById("maybankBalanceBigNote");
     var spentRow = document.getElementById("maybankSpentRow");
-    var surplusBanner = document.getElementById("maybankSurplusBanner");
     var emptyHint = document.getElementById("maybankEmptyHint");
     var resultBlockWrap = document.getElementById("maybankBalanceResultBlock");
 
@@ -4118,7 +4084,6 @@
       emptyHint.style.display = "block";
       resultBlockWrap.style.display = "none";
       spentRow.style.display = "none";
-      surplusBanner.style.display = "none";
       return;
     }
     emptyHint.style.display = "none";
@@ -4129,9 +4094,7 @@
     if(calc.maybankCurrentBalance <= 0){
       bigResult.textContent = formatRM(0);
       bigResult.classList.add(calc.maybankCurrentBalance < 0 ? "negative" : "zero");
-      bigNote.textContent = calc.maybankCurrentBalance < 0
-        ? "Baki negatif — semak semula akaun Maybank."
-        : "Tiada baki lagi untuk berbelanja.";
+      bigNote.textContent = calc.maybankCurrentBalance < 0 ? "⚠️ Insufficient balance" : "";
     } else {
       bigResult.textContent = formatRM(calc.maybankCurrentBalance);
       bigResult.classList.add("positive");
@@ -4139,12 +4102,6 @@
     }
     document.getElementById("maybankSpentValue").textContent = formatRM(calc.maybankSpentEstimate);
 
-    if(calc.maybankSurplus > 0){
-      surplusBanner.style.display = "block";
-      document.getElementById("maybankSurplusAmount").textContent = "ℹ️ Baki lebih " + formatRM(calc.maybankSurplus);
-    } else {
-      surplusBanner.style.display = "none";
-    }
   }
 
   /* ============================================================
@@ -4256,7 +4213,7 @@
       right.className = "acct-right";
       var valEl = document.createElement("div");
       valEl.className = "acct-value" + (res ? "" : " missing");
-      valEl.textContent = res ? formatRM(res.value) : "Belum dimasukkan";
+      valEl.textContent = res ? formatRM(res.value) : "Not entered";
       right.appendChild(valEl);
       if(res){
         var srcEl = document.createElement("div");
@@ -4269,16 +4226,8 @@
       list.appendChild(row);
     });
 
-    document.getElementById("totalAllValue").textContent = formatRM(totalAll) + (missingAll.length ? " *" : "");
-    document.getElementById("totalAvailableValue").textContent = formatRM(totalAvailable) + (missingAvailable.length ? " *" : "");
-
-    var warn = document.getElementById("totalsWarning");
-    if(missingAll.length){
-      warn.style.display = "block";
-      warn.textContent = "* Belum lengkap — baki " + missingAll.join(", ") + " belum dimasukkan.";
-    } else {
-      warn.style.display = "none";
-    }
+    document.getElementById("totalAllValue").textContent = formatRM(totalAll);
+    document.getElementById("totalAvailableValue").textContent = formatRM(totalAvailable);
   }
 
   /* ============================================================
@@ -4300,7 +4249,7 @@
     var notesInput = document.getElementById("notesInput");
     if(document.activeElement !== notesInput) notesInput.value = monthData.notes || "";
     document.getElementById("notesMonthLabel").textContent = currentMeta().short;
-    document.getElementById("notesCount").textContent = (monthData.notes || "").length + " aksara";
+    document.getElementById("notesCount").textContent = (monthData.notes || "").length + " chars";
   }
 
   /* ============================================================
@@ -4536,7 +4485,7 @@
     I.push([monthKey, "", "Monthly income (Income field)", "", M(calc.income), "Yes"]);
     MOVE_ACCOUNTS.forEach(function(a){
       mo[a.listKey].forEach(function(x){
-        if(x.direction === "in") I.push([monthKey, x.date || "", x.name || "(Tiada nama)", a.name, M(x.amount), "No — incoming movement (" + x.id + ")"]);
+        if(x.direction === "in") I.push([monthKey, x.date || "", x.name || "(No name)", a.name, M(x.amount), "No — incoming movement (" + x.id + ")"]);
       });
     });
 
@@ -4547,7 +4496,7 @@
     mo.expenses.forEach(function(e){
       var i = info[e.id];
       var statusText = i.status === "paid" ? "Paid" : (i.status === "partial" ? "Partially paid" : "Unpaid");
-      E.push([e.id, e.date || "", isDueDate(e.dueDate) ? e.dueDate : "", e.name || "(Tiada nama)", M(i.amount), statusText,
+      E.push([e.id, e.date || "", isDueDate(e.dueDate) ? e.dueDate : "", e.name || "(No name)", M(i.amount), statusText,
         e.paid ? (i.linked ? "Yes (remainder only)" : "Yes") : "No"]
         .concat(LINK_ACCOUNTS.map(function(a){ return M(i.paidBy[a.key]); }))
         .concat([M(i.paidTick), M(i.paid), M(i.outstanding), M(i.overpaid),
@@ -4573,9 +4522,9 @@
         var linked = linkId ? expById[linkId] : null;
         var rKey = Receipts.makeKey(monthKey, a.key, x.id);
         var hasR = Receipts.has(rKey);
-        R.push([x.id, x.date || "", x.name || "(Tiada nama)", a.name, x.direction === "out" ? "Keluar (Out)" : "Masuk (In)",
+        R.push([x.id, x.date || "", x.name || "(No name)", a.name, x.direction === "out" ? "Keluar (Out)" : "Masuk (In)",
           M(x.amount), M(x.direction === "out" ? -num(x.amount) : num(x.amount)),
-          linkId || "", linked ? (linked.name || "(Tiada nama)") : "",
+          linkId || "", linked ? (linked.name || "(No name)") : "",
           hasR ? "Yes" : "No", hasR ? "IndexedDB: " + rKey : ""]);
       });
       var t = trackerTotals(mo[a.listKey]);
@@ -4602,7 +4551,7 @@
       return true;
     }catch(err){
       console.error(err);
-      showError("Excel tak dapat dibuat", err);
+      showError("Excel could not be created", err);
       return false;
     }
   }
@@ -4630,7 +4579,7 @@
     renderAll();
 
     Receipts.removeMonth(monthKey).catch(function(err){
-      showError("Resit bulan dipadam tak dapat dibuang sepenuhnya", err);
+      showError("Receipts could not be deleted", err);
     });
   }
 
@@ -4676,19 +4625,20 @@
     document.getElementById("notesInput").addEventListener("input", function(e){
       var monthData = state.months[state.selectedMonth];
       monthData.notes = e.target.value;
-      document.getElementById("notesCount").textContent = monthData.notes.length + " aksara";
+      document.getElementById("notesCount").textContent = monthData.notes.length + " chars";
       saveState();
     });
 
     document.getElementById("notesClearBtn").addEventListener("click", function(){
       openModal(
-        "Kosongkan catatan?",
-        "Catatan untuk " + currentMeta().label + " akan dipadam. Bulan lain tidak terjejas.",
+        "Clear notes?",
+        "Notes for " + currentMeta().label + " will be deleted.",
         function(){
           state.months[state.selectedMonth].notes = "";
           saveState();
           renderNotes(state.months[state.selectedMonth]);
-        }
+        },
+        { confirmText: "Clear" }
       );
     });
 
@@ -4714,7 +4664,6 @@
       var monthData = state.months[state.selectedMonth];
       var norm = function(s){ return String(s || "").trim().toLowerCase(); };
       var linkedCount = 0;
-      var skippedAmbiguous = [];
 
       MOVE_ACCOUNTS.forEach(function(a){
         monthData[a.listKey].forEach(function(w){
@@ -4728,26 +4677,13 @@
           if(matches.length === 1){
             w.linkedExpenseId = matches[0].id;
             linkedCount++;
-          } else if(matches.length > 1){
-            skippedAmbiguous.push(w.name + " (" + a.name + ")");
           }
         });
       });
 
       saveState();
       renderAll();
-
-      var msg = linkedCount > 0
-        ? linkedCount + " pergerakan Keluar berjaya di-link ikut nama yang sepadan dengan commitment (semua akaun)."
-        : "Tiada pergerakan baru yang sepadan untuk di-link. Semak nama entry vs nama commitment.";
-      if(skippedAmbiguous.length > 0){
-        msg += "\n\nAda " + skippedAmbiguous.length + " nama yang sepadan dengan lebih dari satu commitment (link manual je untuk ni): " + skippedAmbiguous.join(", ") + ".";
-      }
-      var over = calcExpenses(monthData).overpaidList;
-      if(over.length){
-        msg += "\n\n⚠️ Bayaran link melebihi commitment: " + over.map(function(o){ return o.name + " +" + formatRM(o.over); }).join(", ") + ". Semak kalau ada pergerakan yang sama di-link dua kali (contoh: pindahan RHB→Maybank dan bayaran dari Maybank).";
-      }
-      openModal("Auto-link selesai", msg, null, { hideConfirm: true, cancelText: "OK" });
+      flashIndicator(linkedCount > 0 ? "✓ " + linkedCount + " linked" : "No matches");
     });
 
     document.getElementById("overallToggle").addEventListener("click", function(){
@@ -4764,7 +4700,7 @@
       var key = meta.key;
       openModal(
         "Reset " + meta.label + "?",
-        "Are you sure you want to reset this month's data? Income, commitments, RHB movements, Maybank movements, notes, ASNB, TNG Go+, ShopeePay Money+ and receipt photos for " + meta.label + " will be cleared (profile \"" + ((activeProfile() || {}).name || "") + "\" only). Other months and profiles are not affected.",
+        "All data and receipts for " + meta.label + " will be permanently deleted.",
         function(){
           state.months[key] = emptyMonth();
           saveState();
@@ -4776,9 +4712,8 @@
 
     document.getElementById("resetAllBtn").addEventListener("click", function(){
       openModal(
-        "Reset ALL data?",
-        "Profile \"" + ((activeProfile() || {}).name || "") + "\" only — other profiles are not affected.\n\nThis will permanently erase income, commitments, RHB movements, Maybank movements, notes, ASNB, TNG Go+, ShopeePay Money+ and receipt photos for every month from " +
-          MONTHS[0].label + " to " + MONTHS[MONTHS.length - 1].label + ". This cannot be undone.",
+        "Reset all data?",
+        "All months and receipts in this profile will be permanently deleted.",
         function(){
           // keep the current month window; ID counters keep counting up so a
           // new transaction can never pick up an old receipt
@@ -4797,17 +4732,14 @@
       var receiptCount = Receipts.countForMonth(key);
       openModal(
         "Delete " + meta.label + "?",
-        "All of " + meta.label + "'s income, commitments, movements (RHB, Maybank, ASNB, TNG Go+, ShopeePay Money+), notes and " +
-          receiptCount + " receipt photo(s) will be permanently deleted. This cannot be undone.\n\n" +
-          newMeta.label + " will be added as a new, empty month so 7 months stay active. Other months and other profiles are not affected.\n\n" +
-          "Tip: download this month to Excel first to keep a record.",
+        "All data and " + receiptCount + " receipt(s) for " + meta.label + " will be permanently deleted. " + newMeta.label + " will be added.",
         function(){ deleteMonth(key); },
         {
           confirmText: "Delete Month",
-          extraText: "⬇️ Download Excel first (" + meta.short + ")",
+          extraText: "⬇️ Download Excel first",
           onExtra: function(btn){
             if(exportMonthToExcel(key)){
-              btn.textContent = "✓ Excel downloaded — you can now delete";
+              btn.textContent = "✓ Excel downloaded";
               btn.classList.add("done");
             }
           }
@@ -4840,7 +4772,7 @@
       if(!file || !receiptView.key) return;
       var msg = document.getElementById("receiptImgMsg");
       msg.style.display = "block";
-      msg.textContent = "Menyimpan…";
+      msg.textContent = "Saving…";
       document.getElementById("receiptImg").style.display = "none";
       Receipts.save(receiptView.month, receiptView.account, receiptView.tx, file).then(function(){
         input.value = "";
@@ -4850,7 +4782,7 @@
       }).catch(function(err){
         input.value = "";
         loadReceiptImage();
-        msg.textContent = "Tak dapat simpan: " + (err && err.message ? err.message : err);
+        msg.textContent = "Could not save: " + (err && err.message ? err.message : err);
       });
     });
     document.getElementById("receiptDeleteBtn").addEventListener("click", function(){
@@ -4867,7 +4799,7 @@
       }).catch(function(err){
         btn.classList.remove("armed");
         btn.textContent = "🗑️ Delete";
-        document.getElementById("receiptImgMsg").textContent = "Tak dapat padam: " + (err && err.message ? err.message : err);
+        document.getElementById("receiptImgMsg").textContent = "Could not delete: " + (err && err.message ? err.message : err);
       });
     });
   }
