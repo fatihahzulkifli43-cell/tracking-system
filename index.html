@@ -1195,12 +1195,252 @@
   }
   .profile-create button, .profile-mini.primary{ background: var(--teal); color: #06231d; }
 
-  body.load-error .app > :not(header.top):not(#loadErrorPanel){ display: none !important; }
   .load-error-card{ border-left: 5px solid var(--amber); }
   .load-error-card .reset-row{ flex-wrap: wrap; }
+
+  /* ============================================================
+     v3.5 — encrypted private profiles (lock screen, profile menu)
+     ============================================================ */
+  body.locked .app{ display: none !important; }
+  body:not(.locked) .lock-screen{ display: none; }
+  .lock-screen{ min-height: 100vh; display:flex; align-items:flex-start; justify-content:center; padding: 8vh 16px 32px; }
+  .lock-screen[hidden]{ display:none; }
+  .lock-card{
+    width: 100%; max-width: 420px; background: var(--card); color: var(--text-main);
+    border-radius: var(--radius-lg); padding: 22px 18px; box-shadow: var(--shadow-dark);
+  }
+  .lock-brand{ font-size: 21px; font-weight: 800; }
+  .lock-tag{ font-size: 13.5px; color: var(--text-soft); margin: 6px 0 16px; line-height: 1.45; }
+  .lock-error{ background: var(--amber-soft); color: #92400e; border-radius: 10px; padding: 12px; font-size: 13.5px; line-height: 1.5; }
+  .lock-error[hidden], #lockMain[hidden]{ display:none; }
+  .lock-notice{ background: var(--blue-soft); color: #1e40af; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 600; margin: 0 0 12px; }
+  .lock-notice[hidden]{ display:none; }
+  .lock-profiles{ display:flex; flex-direction:column; gap: 8px; }
+  .lock-empty{ font-size: 13.5px; color: var(--text-soft); margin: 0 0 8px; }
+  .lock-empty[hidden]{ display:none; }
+  .lock-row{ border: 1px solid #e4e8ef; border-radius: 12px; overflow: hidden; }
+  .lock-row.open{ border-color: rgba(20,184,166,0.6); }
+  .lock-pick{
+    width: 100%; display:flex; align-items:center; gap: 10px; padding: 10px 12px;
+    border: none; background: transparent; cursor: pointer; text-align: left;
+    font-family: var(--font); font-size: 15px; font-weight: 700; color: var(--text-main);
+  }
+  .lock-name{ flex: 1 1 auto; min-width: 0; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lock-icon{ font-size: 13px; opacity: .6; }
+  .lock-unlock{ display:flex; gap: 6px; padding: 0 10px 10px; }
+  .lock-unlock input, .lock-form input[type=text], .lock-form input[type=password]{
+    flex: 1 1 auto; min-width: 0; height: 42px; border: 1px solid #e4e8ef; border-radius: 10px;
+    background: var(--card-muted); padding: 0 12px; font-family: var(--font); font-size: 16px; color: var(--text-main); outline: none;
+  }
+  .lock-form input[type=text], .lock-form input[type=password]{ flex: 0 0 auto; }
+  .lock-unlock input:focus, .lock-form input:focus{ border-color: var(--teal); background: #fff; }
+  .lock-unlock button, .lock-primary{
+    flex: 0 0 auto; height: 42px; padding: 0 16px; border: none; border-radius: 10px; cursor: pointer;
+    background: var(--teal); color: #06231d; font-family: var(--font); font-size: 14.5px; font-weight: 800;
+  }
+  .lock-unlock button:disabled, .lock-primary:disabled{ opacity: .6; }
+  .lock-actions{ display:flex; gap: 8px; margin: 14px 0 0; flex-wrap: wrap; }
+  .lock-secondary{
+    height: 38px; padding: 0 12px; border: 1px solid #e4e8ef; border-radius: 10px; background: #fff; cursor: pointer;
+    font-family: var(--font); font-size: 13.5px; font-weight: 700; color: var(--text-main);
+    display:inline-flex; align-items:center;
+  }
+  .file-pick{ position: relative; overflow: hidden; }
+  .file-pick input{ position:absolute; inset:0; opacity:0; cursor:pointer; font-size: 16px; }
+  .lock-form{ display:flex; flex-direction:column; gap: 8px; margin-top: 12px; padding: 12px; border: 1px solid #e4e8ef; border-radius: 12px; background: #fbfcfe; }
+  .lock-form[hidden]{ display:none; }
+  .lock-form-title{ font-size: 14px; font-weight: 800; }
+  .lock-form-row{ display:flex; gap: 8px; }
+  .lock-check{ display:flex; gap: 8px; align-items:flex-start; font-size: 12.5px; color: var(--text-soft); line-height: 1.45; }
+  .lock-check input{ margin-top: 2px; flex: 0 0 auto; width: 16px; height: 16px; }
+  .lock-note{ font-size: 12.5px; color: var(--text-soft); margin: 0; line-height: 1.45; }
+  .lock-section{ margin-top: 16px; padding-top: 14px; border-top: 1px solid #eef0f4; display:flex; flex-direction:column; gap: 8px; }
+  .lock-section[hidden]{ display:none; }
+  .lock-status{ font-size: 13px; font-weight: 600; color: var(--blue); min-height: 18px; margin: 12px 0 0; }
+  .lock-status.bad{ color: var(--red); }
+  .lock-info{ margin-top: 12px; font-size: 12.5px; color: var(--text-soft); line-height: 1.5; }
+  .lock-info summary{ cursor: pointer; font-weight: 700; color: var(--text-main); }
+  .lock-info p{ margin: 8px 0 0; }
+
+  .import-list{ display:flex; flex-direction:column; gap: 6px; }
+  .import-row{ display:flex; align-items:center; gap: 8px; border: 1px solid #e4e8ef; border-radius: 10px; padding: 8px 8px 8px 10px; flex-wrap: wrap; }
+  .import-info{ flex: 1 1 180px; min-width: 0; }
+  .import-name{ font-size: 14px; font-weight: 700; overflow:hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .import-meta{ font-size: 12px; color: var(--text-soft); line-height: 1.4; }
+  .import-meta.good{ color: var(--green); font-weight: 600; margin-top: 2px; }
+  .import-actions{ display:flex; gap: 6px; flex-wrap: wrap; }
+
+  .save-indicator.saving{ color: var(--text-inverse-soft); }
+  .save-indicator.error{ color: #fca5a5; }
+  .account-box{ max-height: 92vh; overflow-y: auto; }
+  .modal-box p.account-msg{ margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+  .modal-box p.account-msg:empty{ display:none; }
+  .modal-box p.account-msg.good{ color: var(--green); }
+  .modal-box p.account-msg.bad{ color: var(--red); }
+  .account-section{ border-top: 1px solid #eef0f4; padding: 8px 0; display:flex; flex-direction:column; gap: 2px; }
+  .account-link{
+    text-align: left; border: none; background: transparent; padding: 9px 2px; cursor: pointer;
+    font-family: var(--font); font-size: 14.5px; font-weight: 700; color: var(--text-main);
+  }
+  .account-link.danger{ color: var(--red); }
+  .account-form{ display:flex; flex-direction:column; gap: 6px; margin-bottom: 8px; }
+  .account-form[hidden]{ display:none; }
+  .account-form input{
+    height: 42px; border: 1px solid #e4e8ef; border-radius: 10px; background: var(--card-muted);
+    padding: 0 12px; font-family: var(--font); font-size: 16px; color: var(--text-main); outline: none;
+  }
+  .account-form input:focus{ border-color: var(--teal); background: #fff; }
+  .danger-btn{ background: var(--red) !important; color: #fff !important; }
+
+  /* ============================================================
+     v3.6 — Commitments rows: compact grid
+     Row 1: checkbox | name (fills) | RM amount | delete
+     Row 2: due date + status (under the name) · Row 3: payment status
+     ============================================================ */
+  #expenseList .expense-row{
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) 116px 36px;
+    column-gap: 8px;
+    row-gap: 6px;
+    align-items: center;
+  }
+  #expenseList .expense-row > input[type="text"]{ width: 100%; min-width: 0; }
+  #expenseList .expense-row .amount-wrap{ width: 100%; min-width: 0; }
+  #expenseList .expense-row .amount-wrap input[type="number"]{ min-width: 0; }
+  #expenseList .expense-row .expense-due,
+  #expenseList .expense-row .expense-status{
+    grid-column: 2 / -1;
+    padding-left: 0;
+    margin-top: 0;
+    min-width: 0;
+  }
+  #expenseList .expense-row .expense-due{ flex-wrap: wrap; gap: 6px; }
+  #expenseList .expense-due [hidden]{ display: none !important; }
+  #expenseList .expense-due .due-input-wrap{ flex: 0 0 auto; padding: 0 8px; }
+  #expenseList .expense-due input[type="date"]{ width: auto; flex: 0 0 auto; }
+  .due-add, .due-cancel{
+    height: 26px; padding: 0 8px; margin-left: -8px; border: none; border-radius: 6px; background: transparent;
+    color: var(--blue); font-family: var(--font); font-size: 12.5px; font-weight: 700; cursor: pointer;
+  }
+  .due-add:hover{ background: var(--blue-soft); }
+  .due-cancel{ margin-left: 0; color: var(--text-soft); }
+  .due-cancel:hover{ background: var(--card-muted); }
+  .due-date-btn{
+    height: 26px; padding: 0 9px; border: 1px solid #e4e8ef; border-radius: 999px; background: #fff;
+    color: var(--text-main); font-family: var(--font); font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .due-date-btn:hover{ border-color: #c9d0dc; }
+  #expenseList .expense-due .due-clear{
+    width: 24px; height: 24px; border: none; border-radius: 999px; background: transparent;
+    color: var(--text-soft); font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  #expenseList .expense-due .due-clear:hover{ background: var(--red-soft); color: var(--red); }
+
+  @media (max-width: 480px){
+    #expenseList .expense-row .expense-due{ gap: 5px; }
+    #expenseList .expense-row .expense-due input[type="date"]{ font-size: 14px; min-height: 32px; }
+    #expenseList .expense-row .due-badge{ padding: 4px 7px; font-size: 11.5px; }
+  }
+  @media (max-width: 400px){
+    #expenseList .expense-row{
+      grid-template-columns: 22px minmax(0, 1fr) 100px 30px;
+      column-gap: 6px;
+      padding: 8px 0;
+    }
+    #expenseList .expense-row > input[type="text"]{ padding: 10px 9px; }
+    #expenseList .expense-row .amount-wrap{ padding: 0 8px; }
+    #expenseList .expense-row .amount-wrap span{ margin-right: 3px; }
+    #expenseList .expense-row .del-btn{ width: 30px; height: 30px; font-size: 14px; }
+    #expenseList .expense-row .paid-checkbox{ width: 22px; height: 22px; }
+  }
+  @media (max-width: 400px){
+    #expenseList .expense-row .expense-due{ gap: 4px; }
+    .due-date-btn{ padding: 0 7px; font-size: 12px; }
+    #expenseList .expense-row .due-badge{ padding: 3px 6px; font-size: 11px; }
+    #expenseList .expense-due .due-clear{ width: 22px; height: 22px; }
+  }
+  @media (max-width: 340px){
+    #expenseList .expense-row{ grid-template-columns: 22px minmax(0, 1fr) 92px 28px; column-gap: 5px; }
+    #expenseList .expense-row .del-btn{ width: 28px; height: 28px; }
+  }
 </style>
 </head>
-<body>
+<body class="locked">
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-brand">💸 Money Tracker</div>
+    <p class="lock-tag">Profil peribadi dalam browser ini. Data setiap profil disulitkan dengan kata laluannya sendiri.</p>
+
+    <div class="lock-error" id="cryptoError" hidden>
+      <b>⚠️ Penyulitan tidak tersedia dalam browser ini.</b><br>
+      Money Tracker memerlukan Web Crypto API untuk menyulitkan data, dan tidak akan menyimpan data tanpa penyulitan.
+      Buka fail ini dalam versi terkini Chrome, Edge, Firefox atau Safari (terus sebagai fail, atau dari <code>https://</code> / <code>localhost</code>).
+      Tiada data dibaca, diubah atau dipadam.
+    </div>
+    <div class="lock-error" id="vaultError" hidden></div>
+
+    <div id="lockMain">
+      <p class="lock-notice" id="lockNotice" hidden></p>
+      <div class="lock-profiles" id="lockProfiles"></div>
+      <p class="lock-empty" id="lockEmpty" hidden>Belum ada profil. Cipta profil pertama anda.</p>
+
+      <div class="lock-actions">
+        <button type="button" class="lock-secondary" id="newProfileToggle">＋ Profil baru</button>
+        <label class="lock-secondary file-pick">📂 Pulihkan backup
+          <input type="file" id="restoreFile" accept="application/json,.json">
+        </label>
+      </div>
+
+      <form class="lock-form" id="newProfileForm" hidden autocomplete="off">
+        <div class="lock-form-title">Profil baru</div>
+        <input type="text" id="newProfileName" maxlength="40" placeholder="Nama profil" required>
+        <input type="password" id="newProfilePw" autocomplete="new-password" placeholder="Kata laluan (min. 8 aksara)" required>
+        <input type="password" id="newProfilePw2" autocomplete="new-password" placeholder="Ulang kata laluan" required>
+        <label class="lock-check"><input type="checkbox" id="newProfileAck"><span>Saya faham: jika kata laluan dilupakan, data profil ini <b>tidak boleh dipulihkan</b> (kecuali dari backup).</span></label>
+        <button type="submit" class="lock-primary">Cipta &amp; buka profil</button>
+      </form>
+
+      <form class="lock-form" id="restoreForm" hidden autocomplete="off">
+        <div class="lock-form-title">Pulihkan backup disulitkan</div>
+        <p class="lock-note" id="restoreInfo"></p>
+        <input type="text" id="restoreName" maxlength="40" placeholder="Nama profil">
+        <input type="password" id="restorePw" autocomplete="current-password" placeholder="Kata laluan semasa backup dibuat" required>
+        <div class="lock-form-row">
+          <button type="submit" class="lock-primary">Pulihkan</button>
+          <button type="button" class="lock-secondary" id="restoreCancel">Batal</button>
+        </div>
+      </form>
+
+      <div class="lock-section" id="legacySection" hidden>
+        <div class="lock-form-title">⚠️ Data lama tanpa kata laluan</div>
+        <p class="lock-note">Data dari versi lama tracker ini <b>belum disulitkan</b> — sesiapa yang guna browser ini boleh membacanya. Lindungi data <b>anda sahaja</b> dengan kata laluan. Data lama tidak dipadam kecuali anda memilihnya.</p>
+        <div class="import-list" id="legacyList"></div>
+        <form class="lock-form" id="legacyForm" hidden autocomplete="off">
+          <p class="lock-note" id="legacySourceLabel"></p>
+          <input type="text" id="legacyName" maxlength="40" placeholder="Nama profil">
+          <input type="password" id="legacyPw" autocomplete="new-password" placeholder="Kata laluan baru (min. 8 aksara)" required>
+          <input type="password" id="legacyPw2" autocomplete="new-password" placeholder="Ulang kata laluan" required>
+          <label class="lock-check"><input type="checkbox" id="legacyOwner"><span>Ini data <b>saya</b>, dan saya mahu menyulitkannya dengan kata laluan ini. Saya faham kata laluan yang dilupakan tidak boleh dipulihkan.</span></label>
+          <div class="lock-form-row">
+            <button type="submit" class="lock-primary">Sulitkan &amp; sahkan</button>
+            <button type="button" class="lock-secondary" id="legacyCancel">Batal</button>
+          </div>
+        </form>
+      </div>
+
+      <p class="lock-status" id="lockStatus" role="status"></p>
+
+      <details class="lock-info">
+        <summary>Tentang keselamatan profil</summary>
+        <p>Data setiap profil (termasuk gambar resit) disulitkan dengan AES-GCM menggunakan kunci yang dijana daripada kata laluan profil (PBKDF2-SHA256). Kata laluan dan kunci tidak disimpan.</p>
+        <p>Ini <b>bukan</b> keselamatan tahap pelayan: data kekal dalam browser dan peranti ini sahaja. Sesiapa yang boleh guna peranti ini masih boleh <b>memadam</b> data (contohnya dengan mengosongkan data browser), dan kata laluan yang lemah boleh diteka. Nama profil tidak disulitkan.</p>
+        <p><b>Kata laluan yang dilupakan tidak boleh dipulihkan.</b> Simpan backup (menu profil → Backup disulitkan, atau Excel) di tempat selamat.</p>
+      </details>
+    </div>
+  </div>
+</div>
 
 <div class="app">
 
@@ -1218,17 +1458,6 @@
       <div class="save-indicator" id="saveIndicator">✓ Saved</div>
     </div>
   </header>
-
-  <!-- shown only if saved data can't be opened (nothing is overwritten) -->
-  <div class="card load-error-card" id="loadErrorPanel" hidden>
-    <h2>⚠️ Data tak dapat dibuka</h2>
-    <p class="hint" id="loadErrorMsg"></p>
-    <p class="hint">Tiada data dipadam atau ditulis ganti. Muat turun salinan data asal untuk simpanan, kemudian cuba lagi atau tukar ke profil lain.</p>
-    <div class="reset-row">
-      <button class="reset-btn month" id="loadErrorDownload" type="button">⬇️ Download data asal (.json)</button>
-      <button class="reset-btn all" id="loadErrorRetry" type="button">🔄 Cuba lagi</button>
-    </div>
-  </div>
 
   <!-- MONTH TABS -->
   <div class="month-tabs" id="monthTabs"></div>
@@ -1588,21 +1817,41 @@
   </div>
 
   <footer class="app-footer">
-    Data disimpan dalam browser ini sahaja, berasingan untuk setiap profil. Gambar resit disimpan dalam IndexedDB browser ini.
+    Data disimpan dalam browser ini sahaja, disulitkan dengan kata laluan setiap profil (termasuk gambar resit). Kata laluan yang dilupakan tidak boleh dipulihkan — simpan backup.
   </footer>
 
 </div>
 
-<!-- PROFILE SHEET -->
+<!-- PROFILE MENU (open profile only) -->
 <div class="modal-overlay" id="profileOverlay">
-  <div class="modal-box profile-box" role="dialog" aria-labelledby="profileSheetTitle">
-    <h3 id="profileSheetTitle">👤 Profil</h3>
-    <p class="profile-sub">Setiap profil ada data, resit dan tetapan sendiri — disimpan dalam browser ini sahaja.</p>
-    <div class="profile-list" id="profileList"></div>
-    <form class="profile-create" id="profileCreateForm">
-      <input type="text" id="profileNewName" maxlength="40" placeholder="Nama profil baru" aria-label="Nama profil baru">
-      <button type="submit">＋ Tambah</button>
-    </form>
+  <div class="modal-box profile-box account-box" role="dialog" aria-labelledby="profileSheetTitle">
+    <h3 id="profileSheetTitle">👤 <span id="profileSheetName"></span></h3>
+    <p class="profile-sub">Profil terbuka. Data disulitkan dalam browser ini dan dikunci semula bila anda kunci / tukar profil, atau selepas 15 minit tanpa aktiviti.</p>
+    <p class="account-msg" id="profileMsg" role="status"></p>
+    <div class="account-section">
+      <button type="button" class="account-link" id="lockBtn">🔒 Kunci profil</button>
+      <button type="button" class="account-link" id="switchBtn">🔄 Tukar profil</button>
+      <button type="button" class="account-link" id="backupBtn">💾 Backup disulitkan (.json)</button>
+    </div>
+    <div class="account-section">
+      <button type="button" class="account-link" id="renameToggle">✎ Tukar nama profil</button>
+      <form id="renameForm" class="account-form" hidden>
+        <input type="text" id="renameInput" maxlength="40" placeholder="Nama profil" required>
+        <button type="submit" class="profile-mini primary">Simpan nama</button>
+      </form>
+      <button type="button" class="account-link" id="pwToggle">🔑 Tukar kata laluan</button>
+      <form id="pwForm" class="account-form" hidden autocomplete="off">
+        <input type="password" id="pwCurrent" autocomplete="current-password" placeholder="Kata laluan semasa" required>
+        <input type="password" id="pwNew" autocomplete="new-password" placeholder="Kata laluan baru (min. 8 aksara)" required>
+        <input type="password" id="pwNew2" autocomplete="new-password" placeholder="Ulang kata laluan baru" required>
+        <button type="submit" class="profile-mini primary">Tukar kata laluan</button>
+      </form>
+      <button type="button" class="account-link danger" id="deleteProfileToggle">🗑️ Padam profil ini</button>
+      <form id="deleteProfileForm" class="account-form" hidden autocomplete="off">
+        <input type="password" id="deleteProfilePw" autocomplete="current-password" placeholder="Kata laluan profil untuk sahkan" required>
+        <button type="submit" class="profile-mini danger-btn">Padam profil</button>
+      </form>
+    </div>
     <div class="modal-actions">
       <button class="cancel" id="profileCloseBtn" type="button">Tutup</button>
     </div>
@@ -1648,8 +1897,6 @@
   /* ============================================================
      CONSTANTS
      ============================================================ */
-  var STORAGE_KEY = "moneyTrackerData_v1";               // unchanged — existing data keeps loading
-  var BACKUP_KEY = "moneyTrackerData_v1_backup_before_v2"; // one-time copy of the pre-update data
   var SCHEMA_VERSION = 2;
   var ACTIVE_MONTH_COUNT = 7;
   var DEFAULT_FIRST_MONTH = "2026-11";
@@ -1765,11 +2012,6 @@
   /* ============================================================
      PERSISTENCE
      ============================================================ */
-  function safeSetItem(key, value){
-    try{ localStorage.setItem(key, value); return true; }
-    catch(err){ console.warn("Could not write " + key, err); return false; }
-  }
-
   function normalizeMovements(list, defaultDir, expenses){
     list.forEach(function(x){
       if(typeof x.amount !== "number" || isNaN(x.amount)) x.amount = 0;
@@ -1922,346 +2164,905 @@
     }
   }
 
-  var saveTimer = null;
-  function saveState(){
-    // Never write while a profile failed to load (keeps its data untouched)
-    if(saveBlocked || !state || !registry) return;
-    try{
-      state.schemaVersion = SCHEMA_VERSION;
-      state.counters = counters;
-      localStorage.setItem(profileKey(registry.activeId), JSON.stringify(state));
-      showSaved();
-    }catch(err){
-      console.error("Failed to save data.", err);
-    }
-  }
-
   /* ============================================================
-     PROFILES — separate local workspaces (no accounts, no cloud)
-       moneyTracker_profiles           registry: { version, activeId, profiles:[{id,name,receiptNs,createdAt}] }
-       moneyTracker_profile_<id>       complete tracker data for that profile
-     The pre-profile data ("moneyTrackerData_v1") is migrated once into the
-     "default" profile. It is never deleted, and a copy is kept in
-     "moneyTrackerData_v1_backup_before_profiles".
-     Receipts: the default profile keeps the original IndexedDB keys
-     ("YYYY-MM|acct|tx"); every new profile's keys are prefixed with its ID.
+     PRIVATE PROFILES — encrypted at rest with the Web Crypto API
+     ------------------------------------------------------------
+     • Each profile has its own password. A 256-bit AES-GCM key is derived
+       from it with PBKDF2-SHA256 (600,000 iterations, random 16-byte salt per
+       profile). The key is non-extractable and only kept in memory while the
+       profile is open. Passwords and keys are never stored.
+     • localStorage "moneyTracker_vault": list of profiles (id, name, salt,
+       iteration count, an encrypted check value, pointer to the data). It
+       holds NO financial data.
+     • localStorage "moneyTracker_vault_data_<id>_<n>": the profile's tracker
+       data, AES-GCM encrypted (fresh random 96-bit IV on every save).
+     • IndexedDB "moneyTrackerVault": receipt images AND their details
+       (month/account/transaction, file name) — both encrypted.
+     • Wrong password = AES-GCM authentication fails → nothing is decrypted.
      ============================================================ */
-  var REGISTRY_KEY = "moneyTracker_profiles";
-  var PROFILE_PREFIX = "moneyTracker_profile_";
-  var MIGRATION_BACKUP_KEY = "moneyTrackerData_v1_backup_before_profiles";
-  var DEFAULT_PROFILE_ID = "default";
-  var registry = null;
-  var saveBlocked = true; // writes only after a profile loaded cleanly
+  var VAULT_KEY = "moneyTracker_vault";
+  var VAULT_DATA_PREFIX = "moneyTracker_vault_data_";
+  var LEGACY_REGISTRY_KEY = "moneyTracker_profiles";
+  var LEGACY_PROFILE_PREFIX = "moneyTracker_profile_";
+  var LEGACY_STORAGE_KEY = "moneyTrackerData_v1";
+  var LEGACY_BACKUP_KEYS = ["moneyTrackerData_v1_backup_before_profiles", "moneyTrackerData_v1_backup_before_v2"];
+  var PBKDF2_ITERATIONS = 600000;
+  var MIN_PASSWORD = 8;
+  var AUTO_LOCK_MS = 15 * 60 * 1000;
+  var VERIFY_TEXT = "money-tracker-vault:v1:ok";
 
-  function profileKey(id){ return PROFILE_PREFIX + id; }
+  var vault = null;    // registry (no secrets, no financial data)
+  var session = null;  // { profileId, key, salt, busy } — only while a profile is open
+  var sessionEpoch = 0;
+
+  var Crypt = (function(){
+    var te = new TextEncoder(), td = new TextDecoder();
+    function available(){
+      try{
+        return window.isSecureContext !== false && !!(window.crypto && window.crypto.subtle &&
+          typeof window.crypto.subtle.deriveKey === "function" && typeof window.crypto.getRandomValues === "function");
+      }catch(e){ return false; }
+    }
+    function rand(n){ var a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+    function toB64(bytes){
+      bytes = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+      var s = "";
+      for(var i = 0; i < bytes.length; i += 32768) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 32768));
+      return btoa(s);
+    }
+    function fromB64(str){
+      var bin = atob(String(str)), a = new Uint8Array(bin.length);
+      for(var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+      return a;
+    }
+    function hex(bytes){ return Array.prototype.map.call(bytes, function(b){ return (b < 16 ? "0" : "") + b.toString(16); }).join(""); }
+    function deriveKey(password, saltB64, iterations){
+      return crypto.subtle.importKey("raw", te.encode(String(password).normalize("NFKC")), { name: "PBKDF2" }, false, ["deriveKey"])
+        .then(function(base){
+          return crypto.subtle.deriveKey({ name: "PBKDF2", salt: fromB64(saltB64), iterations: iterations, hash: "SHA-256" },
+            base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+        });
+    }
+    function encryptBytes(key, bytes, aad){
+      var iv = rand(12);
+      return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv, additionalData: te.encode(aad) }, key, bytes)
+        .then(function(ct){ return { iv: toB64(iv), ct: ct }; }); // ct: ArrayBuffer
+    }
+    function decryptBytes(key, ivB64, ct, aad){
+      return crypto.subtle.decrypt({ name: "AES-GCM", iv: fromB64(ivB64), additionalData: te.encode(aad) }, key, ct);
+    }
+    function encryptText(key, text, aad){
+      return encryptBytes(key, te.encode(text), aad).then(function(r){ return { v: 1, iv: r.iv, ct: toB64(r.ct) }; });
+    }
+    function decryptText(key, blob, aad){
+      if(!blob || typeof blob.iv !== "string" || typeof blob.ct !== "string") return Promise.reject(new Error("Data disulitkan tidak lengkap."));
+      return decryptBytes(key, blob.iv, fromB64(blob.ct), aad).then(function(pt){ return td.decode(pt); });
+    }
+    return { available: available, rand: rand, toB64: toB64, fromB64: fromB64, hex: hex, deriveKey: deriveKey,
+             encryptBytes: encryptBytes, decryptBytes: decryptBytes, encryptText: encryptText, decryptText: decryptText };
+  })();
+
+  /* ---------------- registry ---------------- */
+  function readVault(){
+    var raw = localStorage.getItem(VAULT_KEY);
+    if(raw === null) return { version: 1, profiles: [] };
+    var v;
+    try{ v = JSON.parse(raw); }catch(e){ throw new Error("Senarai profil rosak (" + e.message + ")."); }
+    if(!v || !Array.isArray(v.profiles)) throw new Error("Senarai profil rosak.");
+    v.profiles = v.profiles.filter(function(p){
+      return p && typeof p.id === "string" && p.kdf && typeof p.kdf.salt === "string" && p.verifier && typeof p.dataKey === "string";
+    });
+    return v;
+  }
+  function writeVault(){ localStorage.setItem(VAULT_KEY, JSON.stringify(vault)); }
   function findProfile(id){
-    if(!registry) return null;
-    for(var i = 0; i < registry.profiles.length; i++) if(registry.profiles[i].id === id) return registry.profiles[i];
+    if(!vault) return null;
+    for(var i = 0; i < vault.profiles.length; i++) if(vault.profiles[i].id === id) return vault.profiles[i];
     return null;
   }
-  function activeProfile(){ return registry ? findProfile(registry.activeId) : null; }
+  function activeProfile(){ return session ? findProfile(session.profileId) : null; }
+  function newProfileId(){ var id; do { id = "v" + Crypt.hex(Crypt.rand(8)); } while(findProfile(id)); return id; }
+  function newDataKey(id){ return VAULT_DATA_PREFIX + id + "_" + Crypt.hex(Crypt.rand(4)); }
   function cleanProfileName(n, fallback){
     n = String(n || "").replace(/\s+/g, " ").trim().slice(0, 40);
     return n || fallback;
   }
-  function newProfileId(){
-    var id;
-    do { id = "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); } while(findProfile(id));
-    return id;
+  function passwordProblem(pw, pw2){
+    if(typeof pw !== "string" || pw.length < MIN_PASSWORD) return "Kata laluan mesti sekurang-kurangnya " + MIN_PASSWORD + " aksara.";
+    if(pw.length > 200) return "Kata laluan terlalu panjang.";
+    if(pw2 !== undefined && pw !== pw2) return "Kata laluan tidak sepadan.";
+    return null;
   }
-  function resetCounters(){ Object.keys(counters).forEach(function(k){ counters[k] = 1; }); }
 
-  function readRegistry(){
-    var raw = localStorage.getItem(REGISTRY_KEY);
-    if(raw === null) return null;
-    var reg;
-    try{ reg = JSON.parse(raw); }catch(e){ throw new Error("Senarai profil rosak (" + e.message + ")."); }
-    if(!reg || !Array.isArray(reg.profiles)) throw new Error("Senarai profil rosak (format tidak sah).");
-    var seen = {};
-    reg.profiles = reg.profiles.filter(function(p){
-      if(!p || typeof p.id !== "string" || !p.id || seen[p.id]) return false;
-      seen[p.id] = true;
-      p.name = cleanProfileName(p.name, "Profil");
-      if(typeof p.receiptNs !== "string") p.receiptNs = (p.id === DEFAULT_PROFILE_ID ? "" : p.id);
-      return true;
+  // Derive a profile's key and check it against the encrypted check value.
+  function verifyPassword(p, password){
+    return Crypt.deriveKey(password, p.kdf.salt, p.kdf.iterations).then(function(key){
+      return Crypt.decryptText(key, p.verifier, "verify").then(function(t){
+        if(t !== VERIFY_TEXT) throw new Error("x");
+        return key;
+      }, function(){
+        var e = new Error("Kata laluan salah.");
+        e.wrongPassword = true;
+        throw e;
+      });
     });
-    if(reg.profiles.length === 0) throw new Error("Senarai profil kosong.");
-    if(!seen[reg.activeId]) reg.activeId = reg.profiles[0].id;
-    return reg;
-  }
-  function writeRegistry(reg){ localStorage.setItem(REGISTRY_KEY, JSON.stringify(reg)); }
-
-  // First launch of the profile version: move existing data into "default".
-  // Idempotent — once the registry exists this does nothing; an earlier
-  // interrupted run's profile data is never overwritten. Throws on failure,
-  // leaving the original data exactly as it was.
-  function migrateIfNeeded(){
-    var reg = readRegistry();
-    if(reg) return reg;
-    var raw = localStorage.getItem(STORAGE_KEY);
-    var profile = { id: DEFAULT_PROFILE_ID, name: "Profil Utama", receiptNs: "", createdAt: new Date().toISOString() };
-    var data;
-    if(raw === null){
-      data = JSON.stringify(defaultState());
-    } else {
-      profile.migratedFrom = STORAGE_KEY;
-      if(localStorage.getItem(MIGRATION_BACKUP_KEY) === null) localStorage.setItem(MIGRATION_BACKUP_KEY, raw);
-      var parsed;
-      try{ parsed = JSON.parse(raw); }
-      catch(e){ throw new Error("Data asal tak dapat dibaca (" + e.message + ")."); }
-      if(parsed && parsed.schemaVersion !== SCHEMA_VERSION && localStorage.getItem(BACKUP_KEY) === null) safeSetItem(BACKUP_KEY, raw);
-      data = JSON.stringify(normalizeState(parsed));
-    }
-    if(localStorage.getItem(profileKey(profile.id)) === null){
-      localStorage.setItem(profileKey(profile.id), data);
-      if(localStorage.getItem(profileKey(profile.id)) !== data) throw new Error("Data profil tak dapat disahkan selepas disimpan.");
-    }
-    reg = { version: 1, activeId: profile.id, profiles: [profile] };
-    writeRegistry(reg);
-    return reg;
   }
 
-  function loadProfileState(profile){
-    var raw = localStorage.getItem(profileKey(profile.id));
-    if(raw === null){
-      if(profile.migratedFrom){
-        throw new Error("Data profil \"" + profile.name + "\" tidak dijumpai. Data asal masih ada dalam \"" + STORAGE_KEY + "\" dan \"" + MIGRATION_BACKUP_KEY + "\".");
-      }
-      resetCounters();
-      return defaultState(); // a new profile that has not saved anything yet
-    }
-    var parsed;
-    try{ parsed = JSON.parse(raw); }
-    catch(e){ throw new Error("Data profil \"" + profile.name + "\" rosak (" + e.message + ")."); }
-    return normalizeState(parsed);
+  /* ---------------- saving (encrypt → localStorage) ---------------- */
+  var saveTimer = null, saveDebounce = null, dirty = false, saveQueue = Promise.resolve();
+
+  function setSaveStatus(kind, text){
+    var el = document.getElementById("saveIndicator");
+    if(saveTimer) clearTimeout(saveTimer);
+    el.classList.remove("saving", "error");
+    if(kind === "saving"){ el.textContent = "Menyimpan…"; el.classList.add("show", "saving"); return; }
+    if(kind === "error"){ el.textContent = text || "⚠️ Tak disimpan"; el.classList.add("show", "error"); return; }
+    el.textContent = "✓ Saved";
+    el.classList.add("show");
+    saveTimer = setTimeout(function(){ el.classList.remove("show"); }, 1200);
+  }
+  function showSaved(){ setSaveStatus("saved"); }
+
+  function saveState(){
+    if(!session || !state) return;
+    dirty = true;
+    setSaveStatus("saving");
+    if(saveDebounce) clearTimeout(saveDebounce);
+    if(!session.busy) saveDebounce = setTimeout(flushSave, 300);
   }
 
-  // Load + show a profile. On failure: error panel, nothing is written.
-  function activateProfile(id){
-    var p = findProfile(id);
-    if(!p){ enterLoadError(null, new Error("Profil tidak dijumpai.")); return false; }
-    var st;
-    try{ st = loadProfileState(p); }
-    catch(err){ enterLoadError(p, err); return false; }
-    state = st;
-    saveBlocked = false;
-    Receipts.setNamespace(p.receiptNs);
-    exitLoadError();
-    renderProfileHeader();
-    renderAll();
-    refreshReceiptControls();
-    return true;
+  function flushSave(){
+    if(saveDebounce){ clearTimeout(saveDebounce); saveDebounce = null; }
+    if(!dirty || !session || !state || session.busy) return saveQueue;
+    dirty = false;
+    var s = session;
+    state.schemaVersion = SCHEMA_VERSION;
+    state.counters = counters;
+    var text = JSON.stringify(state); // snapshot now; encrypted below
+    saveQueue = saveQueue.then(function(){
+      return Crypt.encryptText(s.key, text, "state");
+    }).then(function(blob){
+      var p = findProfile(s.profileId);
+      if(!p || session !== s || session.busy){ dirty = true; return; } // locked/changed meanwhile
+      localStorage.setItem(p.dataKey, JSON.stringify(blob));
+      if(!dirty) setSaveStatus("saved");
+    }).catch(function(err){
+      dirty = true;
+      setSaveStatus("error");
+      showError("Data tak dapat disimpan", err);
+    });
+    return saveQueue;
   }
 
   function flushPendingEdits(){
     var a = document.activeElement;
     if(a && a !== document.body && typeof a.blur === "function") a.blur(); // fires pending change events
-    saveState();
+    return flushSave();
   }
 
-  function switchProfile(id){
-    if(!registry || !findProfile(id)) return false;
-    if(registry.activeId === id && state) return true;
-    flushPendingEdits();
-    closeReceiptModal();
-    var prev = registry.activeId;
-    registry.activeId = id;
-    try{ writeRegistry(registry); }
-    catch(err){ registry.activeId = prev; showError("Tak dapat tukar profil", err); return false; }
-    saveBlocked = true; // nothing is written until the new profile loads
-    return activateProfile(id);
+  /* ---------------- open / lock ---------------- */
+  function openSession(p, key, st){
+    sessionEpoch++;
+    session = { profileId: p.id, key: key, salt: p.kdf.salt, busy: false, epoch: sessionEpoch };
+    state = st;
+    dirty = false;
+    Receipts.setSession(session);
+    document.body.classList.remove("locked");
+    document.getElementById("lockScreen").hidden = true;
+    clearLockForms();
+    renderProfileHeader();
+    renderAll();
+    resetIdleTimer();
+    return Receipts.init().then(refreshReceiptControls).catch(function(err){ console.warn(err); });
   }
 
-  function createProfile(name){
-    if(!registry) return null;
-    var id = newProfileId();
-    var p = { id: id, name: cleanProfileName(name, "Profil " + (registry.profiles.length + 1)), receiptNs: id, createdAt: new Date().toISOString() };
-    try{
-      localStorage.setItem(profileKey(id), JSON.stringify(defaultState())); // empty, never copied
-      registry.profiles.push(p);
-      writeRegistry(registry);
-    }catch(err){
-      registry.profiles = registry.profiles.filter(function(x){ return x.id !== id; });
-      try{ localStorage.removeItem(profileKey(id)); }catch(e){}
-      showError("Profil tak dapat dibuat", err);
-      return null;
-    }
-    switchProfile(id);
-    return id;
-  }
-
-  function renameProfile(id, name){
+  function unlockProfile(id, password){
     var p = findProfile(id);
+    if(!p) return Promise.reject(new Error("Profil tidak dijumpai."));
+    var key;
+    return verifyPassword(p, password).then(function(k){
+      key = k;
+      var raw = localStorage.getItem(p.dataKey);
+      if(raw === null) throw new Error("Data profil ini tidak dijumpai dalam browser. Tiada data baru dicipta.");
+      return Crypt.decryptText(key, JSON.parse(raw), "state");
+    }).then(function(text){
+      var st;
+      try{ st = normalizeState(JSON.parse(text)); }
+      catch(e){ throw new Error("Data profil tak dapat dibuka: " + e.message); }
+      return openSession(p, key, st);
+    });
+  }
+
+  // Remove decrypted data and the key from this page as far as JavaScript allows.
+  function wipeSession(){
+    session = null;
+    sessionEpoch++;
+    state = null;
+    dirty = false;
+    if(saveDebounce){ clearTimeout(saveDebounce); saveDebounce = null; }
+    Receipts.reset();
+    closeReceiptModal();
+    closeModal();
+    closeProfileSheet();
+    ["expenseList", "rhbWithdrawalList", "maybankMovementList", "asnbList", "tngList", "spList", "accountBalanceList", "monthTabs"]
+      .forEach(function(id){ var el = document.getElementById(id); if(el) el.innerHTML = ""; });
+    document.querySelectorAll(".app input, .app textarea, #profileOverlay input").forEach(function(el){ if(el.type !== "file") el.value = ""; });
+    document.querySelectorAll(".app .value, .app .acct-value, .app .result-value, .app .result-note, #expensePaidNote, #reserveBanner, " +
+      "#shortfallAmount, #maybankSurplusAmount, #rhbExpensesOverAmount, #totalsWarning, #notesCount, #monthSubtitle, #summaryTitle, #profileBtnName")
+      .forEach(function(el){ el.textContent = ""; });
+    document.getElementById("profileAvatar").textContent = "🔒";
+    document.body.classList.add("locked");
+    document.title = "Money Tracker";
+    clearIdleTimer();
+  }
+
+  function lockSession(notice){
+    return flushPendingEdits().catch(function(){}).then(function(){
+      wipeSession();
+      showLockScreen(notice);
+    });
+  }
+
+  /* ---------------- auto-lock when idle ---------------- */
+  var idleTimer = null;
+  function resetIdleTimer(){
+    if(idleTimer) clearTimeout(idleTimer);
+    if(!session) return;
+    idleTimer = setTimeout(function(){ if(session) lockSession("🔒 Dikunci secara automatik selepas 15 minit tanpa aktiviti."); }, AUTO_LOCK_MS);
+  }
+  function clearIdleTimer(){ if(idleTimer){ clearTimeout(idleTimer); idleTimer = null; } }
+
+  /* ---------------- create / rename / password / delete ---------------- */
+  function createProfile(name, password){
+    var id = newProfileId(), salt = Crypt.toB64(Crypt.rand(16)), key;
+    var stateText = JSON.stringify(defaultState());
+    return Crypt.deriveKey(password, salt, PBKDF2_ITERATIONS).then(function(k){
+      key = k;
+      return Promise.all([Crypt.encryptText(key, VERIFY_TEXT, "verify"), Crypt.encryptText(key, stateText, "state")]);
+    }).then(function(r){
+      var p = { id: id, name: cleanProfileName(name, "Profil " + (vault.profiles.length + 1)),
+        kdf: { alg: "PBKDF2-SHA256", salt: salt, iterations: PBKDF2_ITERATIONS },
+        verifier: r[0], dataKey: newDataKey(id), createdAt: new Date().toISOString() };
+      localStorage.setItem(p.dataKey, JSON.stringify(r[1]));
+      vault.profiles.push(p);
+      try{ writeVault(); }
+      catch(e){ vault.profiles.pop(); try{ localStorage.removeItem(p.dataKey); }catch(x){} throw e; }
+      return openSession(p, key, normalizeState(JSON.parse(stateText)));
+    });
+  }
+
+  function renameProfile(name){
+    var p = activeProfile();
     if(!p) return;
     var old = p.name;
     p.name = cleanProfileName(name, old);
-    try{ writeRegistry(registry); }
-    catch(err){ p.name = old; showError("Nama profil tak dapat disimpan", err); }
+    try{ writeVault(); }catch(err){ p.name = old; throw err; }
     renderProfileHeader();
   }
 
-  function deleteProfile(id){
-    var p = findProfile(id);
-    if(!p || registry.profiles.length <= 1) return;
-    var wasActive = registry.activeId === id;
-    var remaining = registry.profiles.filter(function(x){ return x.id !== id; });
-    var next = { version: registry.version || 1, activeId: wasActive ? remaining[0].id : registry.activeId, profiles: remaining };
-    if(!wasActive) flushPendingEdits();
-    try{ writeRegistry(next); }
-    catch(err){ showError("Profil tak dapat dipadam", err); return; }
-    registry = next;
-    try{ localStorage.removeItem(profileKey(id)); }catch(e){ console.warn(e); }
-    Receipts.clearNamespace(p.receiptNs).then(refreshReceiptControls).catch(function(err){ console.warn(err); });
-    if(wasActive){ saveBlocked = true; state = null; activateProfile(registry.activeId); }
-    else renderProfileHeader();
-  }
-
-  /* ---------- load-error panel (never shows an empty tracker instead) ---------- */
-  var loadErrorRaw = null;
-  function enterLoadError(profile, err){
-    saveBlocked = true;
-    state = null;
-    document.body.classList.add("load-error");
-    document.getElementById("loadErrorPanel").hidden = false;
-    document.getElementById("loadErrorMsg").textContent =
-      (profile ? "Profil \"" + profile.name + "\": " : "Pemindahan data ke profil gagal: ") +
-      ((err && err.message) ? err.message : String(err));
-    renderProfileHeader();
-    console.error(err);
-  }
-  function exitLoadError(){
-    document.body.classList.remove("load-error");
-    document.getElementById("loadErrorPanel").hidden = true;
-  }
-  function downloadRawBackup(){
-    var out = {};
-    try{
-      for(var i = 0; i < localStorage.length; i++){
-        var k = localStorage.key(i);
-        if(/^moneyTracker/.test(k)) out[k] = localStorage.getItem(k);
+  // Re-encrypt everything under a new password-derived key. The switch-over is a
+  // single registry write; until then the old data stays fully valid.
+  function changePassword(current, next){
+    var p = activeProfile(), s = session;
+    if(!p || !s) return Promise.reject(new Error("Tiada profil dibuka."));
+    var created = { ids: [], dataKey: null }, committed = false;
+    return verifyPassword(p, current).then(function(oldKey){
+      return flushPendingEdits().then(function(){
+        s.busy = true;
+        var newSalt = Crypt.toB64(Crypt.rand(16));
+        var stateText = JSON.stringify(state);
+        return Crypt.deriveKey(next, newSalt, PBKDF2_ITERATIONS).then(function(newKey){
+          return Promise.all([Crypt.encryptText(newKey, VERIFY_TEXT, "verify"), Crypt.encryptText(newKey, stateText, "state")])
+            .then(function(r){
+              created.dataKey = newDataKey(p.id);
+              localStorage.setItem(created.dataKey, JSON.stringify(r[1]));
+              return Receipts.reencryptProfile(p.id, oldKey, p.kdf.salt, newKey, newSalt, created.ids).then(function(){ return r[0]; });
+            })
+            .then(function(verifier){
+              // verify the new copy before switching
+              return Crypt.decryptText(newKey, JSON.parse(localStorage.getItem(created.dataKey)), "state").then(function(t){
+                if(t !== stateText) throw new Error("Pengesahan data baru gagal.");
+                return verifier;
+              });
+            })
+            .then(function(verifier){
+              var old = { kdf: p.kdf, verifier: p.verifier, dataKey: p.dataKey };
+              p.kdf = { alg: "PBKDF2-SHA256", salt: newSalt, iterations: PBKDF2_ITERATIONS };
+              p.verifier = verifier;
+              p.dataKey = created.dataKey;
+              try{ writeVault(); }
+              catch(e){ p.kdf = old.kdf; p.verifier = old.verifier; p.dataKey = old.dataKey; throw e; }
+              committed = true;
+              try{ localStorage.removeItem(old.dataKey); }catch(e){}
+              s.key = newKey;
+              s.salt = newSalt;
+              s.busy = false;
+              Receipts.setSession(s);
+              return Receipts.init().then(refreshReceiptControls); // also removes the old receipt copies
+            });
+        });
+      });
+    }).then(function(){
+      s.busy = false;
+      if(dirty) flushSave();
+    }, function(err){
+      s.busy = false;
+      if(!committed){
+        if(created.dataKey) try{ localStorage.removeItem(created.dataKey); }catch(e){}
+        Receipts.deleteIds(created.ids).catch(function(){});
       }
-    }catch(e){ out.error = String(e); }
-    var blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+      if(dirty) flushSave();
+      throw err;
+    });
+  }
+
+  function deleteActiveProfile(password){
+    var p = activeProfile();
+    if(!p) return Promise.reject(new Error("Tiada profil dibuka."));
+    return verifyPassword(p, password).then(function(){
+      vault.profiles = vault.profiles.filter(function(x){ return x.id !== p.id; });
+      try{ writeVault(); }catch(e){ vault.profiles.push(p); throw e; }
+      try{ localStorage.removeItem(p.dataKey); }catch(e){}
+      wipeSession();
+      return Receipts.deleteProfileRecords(p.id).catch(function(){}).then(function(){
+        showLockScreen("Profil \"" + p.name + "\" telah dipadam.");
+      });
+    });
+  }
+
+  /* ---------------- encrypted backup / restore ---------------- */
+  function exportEncryptedBackup(){
+    var p = activeProfile();
+    if(!p) return Promise.resolve();
+    return flushPendingEdits().then(function(){
+      return Receipts.exportProfileRecords(p.id, p.kdf.salt);
+    }).then(function(recs){
+      var out = {
+        type: "money-tracker-encrypted-backup", version: 1, exportedAt: new Date().toISOString(),
+        profile: { name: p.name, kdf: p.kdf, verifier: p.verifier, createdAt: p.createdAt, migratedFrom: p.migratedFrom || null },
+        data: JSON.parse(localStorage.getItem(p.dataKey)),
+        receipts: recs
+      };
+      var safe = p.name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 30);
+      downloadBlob(new Blob([JSON.stringify(out)], { type: "application/json" }),
+        "MoneyTracker_" + safe + "_encrypted_backup_" + todayISO() + ".json");
+    });
+  }
+
+  function restoreEncryptedBackup(obj, name, password){
+    if(!obj || obj.type !== "money-tracker-encrypted-backup" || !obj.profile || !obj.data) return Promise.reject(new Error("Ini bukan fail backup Money Tracker yang disulitkan."));
+    var tmp = { kdf: obj.profile.kdf, verifier: obj.profile.verifier };
+    var id = newProfileId(), dataKey = newDataKey(id), key, ids = [];
+    return verifyPassword(tmp, password).then(function(k){
+      key = k;
+      return Crypt.decryptText(key, obj.data, "state");
+    }).then(function(text){
+      normalizeState(JSON.parse(text)); // must be readable before anything is written
+      return Receipts.importRecords(id, key, obj.profile.kdf.salt, obj.receipts || [], ids);
+    }).then(function(){
+      localStorage.setItem(dataKey, JSON.stringify(obj.data));
+      var p = { id: id, name: cleanProfileName(name || obj.profile.name, "Profil dipulihkan"), kdf: obj.profile.kdf,
+        verifier: obj.profile.verifier, dataKey: dataKey, createdAt: obj.profile.createdAt || new Date().toISOString(),
+        restoredAt: new Date().toISOString() };
+      if(typeof obj.profile.migratedFrom === "string") p.migratedFrom = obj.profile.migratedFrom;
+      vault.profiles.push(p);
+      try{ writeVault(); }catch(e){ vault.profiles.pop(); throw e; }
+      return unlockProfile(id, password);
+    }).catch(function(err){
+      if(!findProfile(id)){
+        try{ localStorage.removeItem(dataKey); }catch(e){}
+        Receipts.deleteIds(ids).catch(function(){});
+      }
+      throw err;
+    });
+  }
+
+  /* ============================================================
+     OLD UNENCRYPTED DATA (earlier versions of this file) — read only.
+     Encrypted into a new password-protected profile only after explicit
+     confirmation + a successful decrypt-and-compare check. The old copy is
+     deleted only if the user then chooses to.
+     ============================================================ */
+  var Legacy = (function(){
+    var KEY_RE = /^(\d{4}-(?:0[1-9]|1[0-2]))\|(rhb|maybank|tng|sp|asnb)\|([A-Za-z0-9_-]{1,40})$/;
+    var IDB_NAME = "moneyTrackerReceipts";
+
+    function get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+    function summarize(data){
+      var months = 0, exp = 0, mv = 0;
+      Object.keys((data && data.months) || {}).forEach(function(k){
+        var m = data.months[k] || {}, any = (Number(m.income) || 0) !== 0 || !!m.notes;
+        exp += (m.expenses || []).length;
+        ["rhbWithdrawals", "maybankMovements", "asnbEntries", "tngEntries", "spEntries", "maybankExtraIncome"].forEach(function(lk){ mv += (m[lk] || []).length; if((m[lk] || []).length) any = true; });
+        if((m.expenses || []).length) any = true;
+        if(any) months++;
+      });
+      return months + " bulan berisi · " + exp + " commitments · " + mv + " pergerakan";
+    }
+    function sources(){
+      var out = [];
+      var regRaw = get(LEGACY_REGISTRY_KEY);
+      if(regRaw){
+        try{
+          (JSON.parse(regRaw).profiles || []).forEach(function(p){
+            if(!p || typeof p.id !== "string") return;
+            var raw = get(LEGACY_PROFILE_PREFIX + p.id);
+            if(raw === null) return;
+            out.push({ id: "p:" + p.id, legacyId: p.id, name: String(p.name || p.id), raw: raw,
+              receiptNs: typeof p.receiptNs === "string" ? p.receiptNs : (p.id === "default" ? "" : p.id) });
+          });
+        }catch(e){ /* unreadable old registry: fall back to the original key */ }
+      }
+      if(!out.length){
+        var root = get(LEGACY_STORAGE_KEY);
+        if(root !== null) out.push({ id: "root", name: "Data asal", raw: root, receiptNs: "" });
+      }
+      out.forEach(function(s){
+        try{ s.summary = summarize(JSON.parse(s.raw)); }catch(e){ s.error = "Data rosak: " + e.message; }
+        s.migratedTo = vault ? vault.profiles.filter(function(p){ return p.migratedFrom === s.id; }).map(function(p){ return p.name; }) : [];
+      });
+      return out;
+    }
+    function openIdb(){
+      return new Promise(function(resolve){
+        if(!window.indexedDB) return resolve(null);
+        var check = indexedDB.databases
+          ? indexedDB.databases().then(function(l){ return l.some(function(d){ return d.name === IDB_NAME; }); })
+          : Promise.resolve(true);
+        check.then(function(exists){
+          if(!exists) return resolve(null);
+          var req;
+          try{ req = indexedDB.open(IDB_NAME); }catch(e){ return resolve(null); }
+          req.onupgradeneeded = function(){ try{ req.transaction.abort(); }catch(e){} };
+          req.onsuccess = function(){
+            var db = req.result;
+            if(!db.objectStoreNames.contains("receipts")){ db.close(); resolve(null); } else resolve(db);
+          };
+          req.onerror = req.onblocked = function(){ resolve(null); };
+        }, function(){ resolve(null); });
+      });
+    }
+    function owned(k, ns){
+      k = String(k);
+      var bare = ns ? (k.indexOf(ns + "|") === 0 ? k.slice(ns.length + 1) : null) : k;
+      return bare && KEY_RE.test(bare) ? bare : null;
+    }
+    function readReceipts(ns){
+      return openIdb().then(function(db){
+        if(!db) return [];
+        return new Promise(function(resolve, reject){
+          var items = [];
+          var t = db.transaction("receipts", "readonly");
+          var req = t.objectStore("receipts").openCursor();
+          req.onsuccess = function(){
+            var c = req.result;
+            if(!c) return;
+            var bare = owned(c.primaryKey, ns), v = c.value;
+            if(bare && v && v.data){
+              items.push({ meta: { key: bare, month: bare.slice(0, 7), type: v.type || "image/jpeg", name: v.name || "receipt",
+                size: v.data.byteLength, savedAt: v.savedAt || new Date().toISOString() }, bytes: v.data });
+            }
+            c.continue();
+          };
+          t.oncomplete = function(){ db.close(); resolve(items); };
+          t.onerror = function(){ db.close(); reject(t.error || new Error("Resit lama tak dapat dibaca.")); };
+        });
+      });
+    }
+    function countReceipts(ns){ return readReceipts(ns).then(function(l){ return l.length; }, function(){ return 0; }); }
+
+    // Delete ONE old source (after the user confirmed, following a verified migration)
+    function wipe(src){
+      if(src.legacyId){
+        try{ localStorage.removeItem(LEGACY_PROFILE_PREFIX + src.legacyId); }catch(e){}
+        try{
+          var reg = JSON.parse(get(LEGACY_REGISTRY_KEY) || "null");
+          if(reg && Array.isArray(reg.profiles)){
+            reg.profiles = reg.profiles.filter(function(p){ return p && p.id !== src.legacyId; });
+            if(reg.profiles.length) localStorage.setItem(LEGACY_REGISTRY_KEY, JSON.stringify(reg));
+            else localStorage.removeItem(LEGACY_REGISTRY_KEY);
+          }
+        }catch(e){}
+      }
+      if(src.receiptNs === ""){ // the original owner's data and its automatic backups
+        [LEGACY_STORAGE_KEY].concat(LEGACY_BACKUP_KEYS).forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+      }
+      return openIdb().then(function(db){
+        if(!db) return;
+        return new Promise(function(resolve){
+          var left = 0;
+          var t = db.transaction("receipts", "readwrite");
+          var req = t.objectStore("receipts").openCursor();
+          req.onsuccess = function(){
+            var c = req.result;
+            if(!c) return;
+            if(owned(c.primaryKey, src.receiptNs)) c.delete(); else left++;
+            c.continue();
+          };
+          t.oncomplete = t.onerror = function(){
+            db.close();
+            if(left === 0){ var d = indexedDB.deleteDatabase(IDB_NAME); d.onsuccess = d.onerror = d.onblocked = function(){ resolve(); }; }
+            else resolve();
+          };
+        });
+      });
+    }
+    return { sources: sources, readReceipts: readReceipts, countReceipts: countReceipts, wipe: wipe };
+  })();
+
+  function migrateLegacy(src, name, password){
+    var id = newProfileId(), salt = Crypt.toB64(Crypt.rand(16)), dataKey = newDataKey(id);
+    var key, verifier, blob, stateText, ids = [], receiptCount = 0;
+    try{ stateText = JSON.stringify(normalizeState(JSON.parse(src.raw))); }
+    catch(e){ return Promise.reject(new Error("Data lama tak dapat dibaca: " + e.message)); }
+    return Crypt.deriveKey(password, salt, PBKDF2_ITERATIONS).then(function(k){
+      key = k;
+      return Promise.all([Crypt.encryptText(key, VERIFY_TEXT, "verify"), Crypt.encryptText(key, stateText, "state")]);
+    }).then(function(r){
+      verifier = r[0]; blob = r[1];
+      return Legacy.readReceipts(src.receiptNs);
+    }).then(function(items){
+      receiptCount = items.length;
+      return Receipts.writePlainAndVerify(id, key, salt, items, ids);
+    }).then(function(){
+      localStorage.setItem(dataKey, JSON.stringify(blob));
+      return Crypt.decryptText(key, JSON.parse(localStorage.getItem(dataKey)), "state");
+    }).then(function(t){
+      if(t !== stateText) throw new Error("Pengesahan data gagal — tiada perubahan dibuat.");
+      var p = { id: id, name: cleanProfileName(name, src.name), kdf: { alg: "PBKDF2-SHA256", salt: salt, iterations: PBKDF2_ITERATIONS },
+        verifier: verifier, dataKey: dataKey, createdAt: new Date().toISOString(), migratedFrom: src.id, migratedAt: new Date().toISOString() };
+      vault.profiles.push(p);
+      try{ writeVault(); }catch(e){ vault.profiles.pop(); throw e; }
+      return openSession(p, key, normalizeState(JSON.parse(stateText))).then(function(){ return { profile: p, receipts: receiptCount }; });
+    }).catch(function(err){
+      if(!findProfile(id)){
+        try{ localStorage.removeItem(dataKey); }catch(e){}
+        Receipts.deleteIds(ids).catch(function(){});
+      }
+      throw err;
+    });
+  }
+
+  /* ============================================================
+     LOCK SCREEN
+     ============================================================ */
+  var lockSelected = null, lockFailures = {}, pendingRestore = null, pendingLegacy = null;
+
+  function downloadBlob(blob, filename){
     var a = document.createElement("a");
     var url = URL.createObjectURL(blob);
     a.href = url;
-    a.download = "Money_Tracker_raw_backup_" + todayISO() + ".json";
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 4000);
   }
-
-  /* ---------- profile UI ---------- */
   function profileInitial(name){ var ch = Array.from(String(name || "?").trim())[0] || "?"; return ch.toUpperCase(); }
-  function renderProfileHeader(){
-    var p = activeProfile();
-    var btn = document.getElementById("profileBtn");
-    btn.disabled = !registry;
-    document.getElementById("profileBtnName").textContent = p ? p.name : "Profil";
-    document.getElementById("profileAvatar").textContent = p ? profileInitial(p.name) : "!";
-    btn.title = p ? "Profil aktif: " + p.name + " (tukar / urus)" : "Profil";
-    document.title = p ? "Money Tracker — " + p.name : "Money Tracker";
-    if(document.getElementById("profileOverlay").classList.contains("show")) renderProfileList();
+  function setLockStatus(text, bad){
+    var el = document.getElementById("lockStatus");
+    el.textContent = text || "";
+    el.className = "lock-status" + (bad ? " bad" : "");
+  }
+  function clearLockForms(){
+    ["newProfileForm", "restoreForm", "legacyForm"].forEach(function(id){
+      var f = document.getElementById(id); f.reset(); f.hidden = true;
+    });
+    document.querySelectorAll("#lockScreen input[type=password]").forEach(function(i){ i.value = ""; });
+    pendingRestore = null; pendingLegacy = null; lockSelected = null;
+    setLockStatus("");
   }
 
-  var profileEditing = null;
-  function renderProfileList(){
-    var list = document.getElementById("profileList");
+  function showLockScreen(notice){
+    document.body.classList.add("locked");
+    var ls = document.getElementById("lockScreen");
+    ls.hidden = false;
+    clearLockForms();
+    var n = document.getElementById("lockNotice");
+    n.textContent = notice || "";
+    n.hidden = !notice;
+    if(!Crypt.available()){
+      document.getElementById("cryptoError").hidden = false;
+      document.getElementById("lockMain").hidden = true;
+      return;
+    }
+    renderLockProfiles();
+    renderLegacySources();
+    if(vault.profiles.length === 0 && Legacy.sources().length === 0) toggleLockForm("newProfileForm", true);
+  }
+
+  function renderLockProfiles(){
+    var list = document.getElementById("lockProfiles");
     list.innerHTML = "";
-    if(!registry) return;
-    var only = registry.profiles.length <= 1;
-    registry.profiles.forEach(function(p){
-      var active = p.id === registry.activeId;
+    document.getElementById("lockEmpty").hidden = vault.profiles.length > 0;
+    vault.profiles.forEach(function(p){
       var row = document.createElement("div");
-      row.className = "profile-row" + (active ? " active" : "");
-
-      if(profileEditing === p.id){
-        var form = document.createElement("form");
-        form.className = "profile-rename";
-        var inp = document.createElement("input");
-        inp.type = "text"; inp.maxLength = 40; inp.value = p.name;
-        inp.setAttribute("aria-label", "Nama profil");
-        var ok = document.createElement("button"); ok.type = "submit"; ok.className = "profile-mini primary"; ok.textContent = "Simpan";
-        var cancel = document.createElement("button"); cancel.type = "button"; cancel.className = "profile-mini"; cancel.textContent = "Batal";
-        form.addEventListener("submit", function(e){ e.preventDefault(); renameProfile(p.id, inp.value); profileEditing = null; renderProfileList(); });
-        cancel.addEventListener("click", function(){ profileEditing = null; renderProfileList(); });
-        form.appendChild(inp); form.appendChild(ok); form.appendChild(cancel);
-        row.appendChild(form);
-        list.appendChild(row);
-        setTimeout(function(){ inp.focus(); inp.select(); }, 0);
-        return;
-      }
-
+      row.className = "lock-row" + (lockSelected === p.id ? " open" : "");
       var pick = document.createElement("button");
-      pick.type = "button";
-      pick.className = "profile-pick";
+      pick.type = "button"; pick.className = "lock-pick";
       var av = document.createElement("span"); av.className = "profile-avatar"; av.textContent = profileInitial(p.name);
-      var nm = document.createElement("span"); nm.className = "profile-row-name"; nm.textContent = p.name;
-      pick.appendChild(av); pick.appendChild(nm);
-      if(active){ var tag = document.createElement("span"); tag.className = "profile-tag"; tag.textContent = "Aktif"; pick.appendChild(tag); }
+      var nm = document.createElement("span"); nm.className = "lock-name"; nm.textContent = p.name;
+      var ic = document.createElement("span"); ic.className = "lock-icon"; ic.textContent = "🔒";
+      pick.appendChild(av); pick.appendChild(nm); pick.appendChild(ic);
       pick.addEventListener("click", function(){
-        if(!active) switchProfile(p.id);
-        closeProfileSheet();
+        lockSelected = lockSelected === p.id ? null : p.id;
+        setLockStatus("");
+        renderLockProfiles();
       });
-
-      var ren = document.createElement("button");
-      ren.type = "button"; ren.className = "profile-icon"; ren.textContent = "✎";
-      ren.setAttribute("aria-label", "Tukar nama " + p.name); ren.title = "Tukar nama";
-      ren.addEventListener("click", function(){ profileEditing = p.id; renderProfileList(); });
-
-      var del = document.createElement("button");
-      del.type = "button"; del.className = "profile-icon danger"; del.textContent = "🗑";
-      del.disabled = only;
-      del.setAttribute("aria-label", "Padam " + p.name);
-      del.title = only ? "Profil terakhir tak boleh dipadam" : "Padam profil";
-      del.addEventListener("click", function(){
-        if(registry.profiles.length <= 1) return;
-        var n = Receipts.countForNamespace(p.receiptNs);
-        openModal(
-          "Padam profil \"" + p.name + "\"?",
-          "Semua data profil ini — income, commitments, pergerakan semua akaun, baki, catatan dan " + n + " gambar resit — akan dipadam terus. Tindakan ini tak boleh diundur.\n\nProfil lain tidak terjejas." +
-            (active ? "\n\nIni profil aktif; anda akan ditukar ke profil lain." : ""),
-          function(){ deleteProfile(p.id); renderProfileList(); },
-          { confirmText: "Padam Profil" }
-        );
-      });
-
-      row.appendChild(pick); row.appendChild(ren); row.appendChild(del);
+      row.appendChild(pick);
+      if(lockSelected === p.id){
+        var form = document.createElement("form");
+        form.className = "lock-unlock";
+        var pw = document.createElement("input");
+        pw.type = "password"; pw.autocomplete = "current-password"; pw.placeholder = "Kata laluan " + p.name;
+        pw.setAttribute("aria-label", "Kata laluan untuk " + p.name);
+        var go = document.createElement("button"); go.type = "submit"; go.textContent = "Buka";
+        form.appendChild(pw); form.appendChild(go);
+        form.addEventListener("submit", function(e){
+          e.preventDefault();
+          var f = lockFailures[p.id] || { n: 0, until: 0 };
+          if(Date.now() < f.until){ setLockStatus("Terlalu banyak cubaan salah. Tunggu " + Math.ceil((f.until - Date.now()) / 1000) + " saat.", true); return; }
+          go.disabled = true; pw.disabled = true;
+          setLockStatus("Membuka…");
+          unlockProfile(p.id, pw.value).then(function(){
+            delete lockFailures[p.id];
+          }, function(err){
+            pw.value = "";
+            if(err.wrongPassword){
+              f.n++;
+              if(f.n >= 5){ f.until = Date.now() + 30000; f.n = 0; }
+              lockFailures[p.id] = f;
+            }
+            setLockStatus(err.message, true);
+          }).then(function(){ go.disabled = false; pw.disabled = false; if(!session) pw.focus(); });
+        });
+        row.appendChild(form);
+        setTimeout(function(){ pw.focus(); }, 0);
+      }
       list.appendChild(row);
     });
   }
+
+  function renderLegacySources(){
+    var srcs = Legacy.sources();
+    var sec = document.getElementById("legacySection");
+    sec.hidden = srcs.length === 0;
+    var list = document.getElementById("legacyList");
+    list.innerHTML = "";
+    srcs.forEach(function(s){
+      var row = document.createElement("div");
+      row.className = "import-row";
+      var info = document.createElement("div"); info.className = "import-info";
+      var nm = document.createElement("div"); nm.className = "import-name"; nm.textContent = s.name;
+      var meta = document.createElement("div"); meta.className = "import-meta";
+      meta.textContent = s.error || s.summary;
+      info.appendChild(nm); info.appendChild(meta);
+      if(!s.error) Legacy.countReceipts(s.receiptNs).then(function(n){ meta.textContent += " · " + n + " resit"; });
+      if(s.migratedTo.length){
+        var done = document.createElement("div"); done.className = "import-meta good";
+        done.textContent = "✓ Sudah disulitkan sebagai \"" + s.migratedTo.join("\", \"") + "\" — salinan lama tanpa kata laluan masih ada.";
+        info.appendChild(done);
+      }
+      row.appendChild(info);
+      var actions = document.createElement("div"); actions.className = "import-actions";
+      if(!s.error && !s.migratedTo.length){
+        var btn = document.createElement("button");
+        btn.type = "button"; btn.className = "profile-mini primary"; btn.textContent = "Lindungi";
+        btn.addEventListener("click", function(){ startLegacyMigration(s); });
+        actions.appendChild(btn);
+      }
+      if(s.migratedTo.length){
+        var del = document.createElement("button");
+        del.type = "button"; del.className = "profile-mini"; del.textContent = "Padam salinan lama";
+        del.addEventListener("click", function(){ confirmWipeLegacy(s); });
+        actions.appendChild(del);
+      }
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+
+  function startLegacyMigration(s){
+    pendingLegacy = s;
+    toggleLockForm("legacyForm", true);
+    document.getElementById("legacySourceLabel").textContent = "Data: " + s.name + " (" + (s.summary || "") + ")";
+    document.getElementById("legacyName").value = s.name === "Data asal" ? "" : s.name;
+    document.getElementById("legacyName").focus();
+  }
+
+  function confirmWipeLegacy(s){
+    openModal(
+      "Padam salinan lama \"" + s.name + "\"?",
+      "Salinan lama TANPA kata laluan (data dan gambar resitnya) akan dipadam dari browser ini.\n\n" +
+        "Versi yang disulitkan (\"" + s.migratedTo.join("\", \"") + "\") tidak terjejas. Tindakan ini tak boleh diundur.",
+      function(){
+        Legacy.wipe(s).then(function(){ renderLegacySources(); setLockStatus("✓ Salinan lama dipadam."); });
+      },
+      { confirmText: "Padam salinan lama" }
+    );
+  }
+
+  function toggleLockForm(id, show){
+    ["newProfileForm", "restoreForm", "legacyForm"].forEach(function(f){
+      var el = document.getElementById(f);
+      el.hidden = f === id ? !show : true;
+      if(el.hidden) el.reset();
+    });
+    setLockStatus("");
+    if(show && id === "newProfileForm") document.getElementById("newProfileName").focus();
+  }
+
+  function busyForm(form, busy){
+    form.querySelectorAll("input, button").forEach(function(el){ el.disabled = busy; });
+  }
+
+  function wireLockScreen(){
+    document.getElementById("newProfileToggle").addEventListener("click", function(){
+      toggleLockForm("newProfileForm", document.getElementById("newProfileForm").hidden);
+    });
+    document.getElementById("newProfileForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var form = e.target;
+      var name = document.getElementById("newProfileName").value;
+      var pw = document.getElementById("newProfilePw").value, pw2 = document.getElementById("newProfilePw2").value;
+      var prob = passwordProblem(pw, pw2);
+      if(prob){ setLockStatus(prob, true); return; }
+      if(!document.getElementById("newProfileAck").checked){ setLockStatus("Sila tandakan bahawa anda faham kata laluan tak boleh dipulihkan.", true); return; }
+      busyForm(form, true);
+      setLockStatus("Mencipta profil…");
+      createProfile(name, pw).catch(function(err){ setLockStatus(err.message, true); }).then(function(){ busyForm(form, false); });
+    });
+
+    document.getElementById("legacyForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var form = e.target, s = pendingLegacy;
+      if(!s) return;
+      var pw = document.getElementById("legacyPw").value, pw2 = document.getElementById("legacyPw2").value;
+      var prob = passwordProblem(pw, pw2);
+      if(prob){ setLockStatus(prob, true); return; }
+      if(!document.getElementById("legacyOwner").checked){ setLockStatus("Sila sahkan bahawa ini data anda.", true); return; }
+      busyForm(form, true);
+      setLockStatus("Menyulitkan dan mengesahkan data…");
+      migrateLegacy(s, document.getElementById("legacyName").value, pw).then(function(r){
+        var src = s;
+        src.migratedTo = [r.profile.name];
+        openModal(
+          "✓ Data dilindungi",
+          "\"" + r.profile.name + "\" kini disulitkan dengan kata laluan anda (" + r.receipts + " gambar resit). Semua data telah disemak semula selepas disulitkan.\n\n" +
+            "Salinan lama TANPA kata laluan masih ada dalam browser ini — sesiapa yang guna browser ini masih boleh membacanya. Padamkan sekarang?",
+          function(){ Legacy.wipe(src); },
+          { confirmText: "Padam salinan lama", cancelText: "Simpan dulu" }
+        );
+      }, function(err){
+        setLockStatus("Tiada perubahan dibuat: " + err.message, true);
+      }).then(function(){ busyForm(form, false); });
+    });
+    document.getElementById("legacyCancel").addEventListener("click", function(){ toggleLockForm("legacyForm", false); });
+
+    document.getElementById("restoreFile").addEventListener("change", function(e){
+      var file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if(!file) return;
+      file.text().then(function(t){
+        var obj = JSON.parse(t);
+        if(!obj || obj.type !== "money-tracker-encrypted-backup") throw new Error("Ini bukan fail backup Money Tracker yang disulitkan.");
+        pendingRestore = obj;
+        toggleLockForm("restoreForm", true);
+        document.getElementById("restoreInfo").textContent = "Backup \"" + (obj.profile && obj.profile.name) + "\" · " + (obj.receipts || []).length + " resit · " + String(obj.exportedAt || "").slice(0, 10);
+        document.getElementById("restoreName").value = (obj.profile && obj.profile.name) || "";
+        document.getElementById("restorePw").focus();
+      }).catch(function(err){ setLockStatus("Fail tak dapat dibaca: " + err.message, true); });
+    });
+    document.getElementById("restoreForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var form = e.target;
+      if(!pendingRestore) return;
+      busyForm(form, true);
+      setLockStatus("Memulihkan…");
+      restoreEncryptedBackup(pendingRestore, document.getElementById("restoreName").value, document.getElementById("restorePw").value)
+        .catch(function(err){ setLockStatus(err.message, true); })
+        .then(function(){ busyForm(form, false); });
+    });
+    document.getElementById("restoreCancel").addEventListener("click", function(){ toggleLockForm("restoreForm", false); });
+  }
+
+  /* ============================================================
+     PROFILE MENU (inside an open profile)
+     ============================================================ */
+  function renderProfileHeader(){
+    var p = activeProfile();
+    document.getElementById("profileBtnName").textContent = p ? p.name : "";
+    document.getElementById("profileAvatar").textContent = p ? profileInitial(p.name) : "🔒";
+    document.getElementById("profileBtn").title = p ? "Profil terbuka: " + p.name : "";
+    document.getElementById("profileSheetName").textContent = p ? p.name : "";
+    document.title = p ? "Money Tracker — " + p.name : "Money Tracker";
+  }
+  function profileMsg(text, good){
+    var el = document.getElementById("profileMsg");
+    el.textContent = text || "";
+    el.className = "account-msg" + (text ? (good ? " good" : " bad") : "");
+  }
   function openProfileSheet(){
-    if(!registry) return;
+    if(!session) return;
     flushPendingEdits();
-    profileEditing = null;
-    document.getElementById("profileNewName").value = "";
-    renderProfileList();
+    ["renameForm", "pwForm", "deleteProfileForm"].forEach(function(id){ var f = document.getElementById(id); f.reset(); f.hidden = true; });
+    profileMsg("");
     document.getElementById("profileOverlay").classList.add("show");
   }
   function closeProfileSheet(){
-    profileEditing = null;
     document.getElementById("profileOverlay").classList.remove("show");
+    ["renameForm", "pwForm", "deleteProfileForm"].forEach(function(id){ var f = document.getElementById(id); if(f) f.reset(); });
   }
+  function toggleSheetForm(id){
+    ["renameForm", "pwForm", "deleteProfileForm"].forEach(function(f){
+      var el = document.getElementById(f);
+      el.hidden = f === id ? !el.hidden : true;
+    });
+    profileMsg("");
+    var shown = document.getElementById(id);
+    if(!shown.hidden){
+      if(id === "renameForm") document.getElementById("renameInput").value = (activeProfile() || {}).name || "";
+      var first = shown.querySelector("input"); if(first) first.focus();
+    }
+  }
+
   function wireProfileEvents(){
     document.getElementById("profileBtn").addEventListener("click", openProfileSheet);
     document.getElementById("profileCloseBtn").addEventListener("click", closeProfileSheet);
     document.getElementById("profileOverlay").addEventListener("click", function(e){
       if(e.target === document.getElementById("profileOverlay")) closeProfileSheet();
     });
-    document.getElementById("profileCreateForm").addEventListener("submit", function(e){
-      e.preventDefault();
-      var input = document.getElementById("profileNewName");
-      if(createProfile(input.value)){ input.value = ""; closeProfileSheet(); }
-    });
-    document.getElementById("loadErrorDownload").addEventListener("click", downloadRawBackup);
-    document.getElementById("loadErrorRetry").addEventListener("click", function(){ location.reload(); });
-  }
+    document.getElementById("lockBtn").addEventListener("click", function(){ lockSession(); });
+    document.getElementById("switchBtn").addEventListener("click", function(){ lockSession("Pilih profil dan masukkan kata laluannya."); });
+    document.getElementById("renameToggle").addEventListener("click", function(){ toggleSheetForm("renameForm"); });
+    document.getElementById("pwToggle").addEventListener("click", function(){ toggleSheetForm("pwForm"); });
+    document.getElementById("deleteProfileToggle").addEventListener("click", function(){ toggleSheetForm("deleteProfileForm"); });
 
-  function showSaved(){
-    var el = document.getElementById("saveIndicator");
-    el.classList.add("show");
-    if(saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(function(){ el.classList.remove("show"); }, 1200);
+    document.getElementById("renameForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      try{ renameProfile(document.getElementById("renameInput").value); profileMsg("✓ Nama ditukar.", true); e.target.hidden = true; }
+      catch(err){ profileMsg(err.message); }
+    });
+    document.getElementById("pwForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var form = e.target;
+      var cur = document.getElementById("pwCurrent").value, n1 = document.getElementById("pwNew").value, n2 = document.getElementById("pwNew2").value;
+      var prob = passwordProblem(n1, n2);
+      if(prob){ profileMsg(prob); return; }
+      busyForm(form, true);
+      profileMsg("Menyulitkan semula data… jangan tutup halaman.", true);
+      changePassword(cur, n1).then(function(){
+        form.reset(); form.hidden = true;
+        profileMsg("✓ Kata laluan ditukar. Semua data dan resit telah disulitkan semula.", true);
+      }, function(err){ profileMsg((err.wrongPassword ? "" : "Tiada perubahan dibuat: ") + err.message); })
+        .then(function(){ busyForm(form, false); });
+    });
+    document.getElementById("backupBtn").addEventListener("click", function(){
+      exportEncryptedBackup().then(function(){
+        profileMsg("✓ Backup disulitkan dimuat turun. Ia hanya boleh dibuka dengan kata laluan profil ini (semasa backup dibuat).", true);
+      }, function(err){ profileMsg(err.message); });
+    });
+    document.getElementById("deleteProfileForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      var pw = document.getElementById("deleteProfilePw").value;
+      var p = activeProfile();
+      openModal(
+        "Padam profil \"" + p.name + "\"?",
+        "Semua data profil ini — income, commitments, pergerakan, baki, catatan dan gambar resit — akan dipadam terus dari browser ini. Tindakan ini tak boleh diundur.\n\nProfil lain tidak terjejas.",
+        function(){
+          deleteActiveProfile(pw).catch(function(err){ profileMsg(err.message); });
+        },
+        { confirmText: "Padam Profil" }
+      );
+    });
+
+    // auto-lock timer: any activity keeps the profile open
+    ["pointerdown", "keydown", "touchstart", "wheel"].forEach(function(ev){
+      document.addEventListener(ev, function(){ if(session) resetIdleTimer(); }, { passive: true });
+    });
+    document.addEventListener("visibilitychange", function(){ if(document.visibilityState === "hidden") flushSave(); });
+    window.addEventListener("beforeunload", function(e){
+      if(dirty || (session && session.busy)){ flushSave(); e.preventDefault(); e.returnValue = ""; }
+    });
   }
 
   /* ============================================================
@@ -2470,39 +3271,41 @@
   }
 
   /* ============================================================
-     RECEIPTS — IndexedDB (images never go into localStorage)
-     Record: { key: "YYYY-MM|account|txId", month, account, txId, type,
-               data: ArrayBuffer, size, name, savedAt }
+     RECEIPTS — IndexedDB "moneyTrackerVault", encrypted per profile.
+     Record: { id (random), profileId, salt (key generation),
+               metaIv, metaCt  → encrypted { key:"YYYY-MM|acct|tx", month, type, name, size, savedAt }
+               iv, ct          → encrypted image bytes }
+     The month / transaction a receipt belongs to is inside the encrypted
+     part; an in-memory index is rebuilt when a profile is unlocked.
      ============================================================ */
   var Receipts = (function(){
-    var DB_NAME = "moneyTrackerReceipts", STORE = "receipts";
+    var DB_NAME = "moneyTrackerVault", STORE = "receipts";
     var dbPromise = null;
-    var keys = {}; // in-memory index of saved receipt keys
+    var sess = null;   // the open session
+    var index = {};    // "YYYY-MM|acct|tx" -> { id, meta }
     var ready = false;
 
     function supported(){ try{ return !!window.indexedDB; }catch(e){ return false; } }
-
     function open(){
       if(dbPromise) return dbPromise;
       dbPromise = new Promise(function(resolve, reject){
-        if(!supported()){ reject(new Error("IndexedDB tidak disokong dalam browser ini.")); return; }
+        if(!supported()){ reject(new Error("IndexedDB tidak disokong — gambar resit tak dapat disimpan dalam browser ini.")); return; }
         var req;
         try{ req = indexedDB.open(DB_NAME, 1); }catch(e){ reject(e); return; }
         req.onupgradeneeded = function(){
           var db = req.result;
           if(!db.objectStoreNames.contains(STORE)){
-            var store = db.createObjectStore(STORE, { keyPath: "key" });
-            store.createIndex("month", "month", { unique: false });
+            var st = db.createObjectStore(STORE, { keyPath: "id" });
+            st.createIndex("profileId", "profileId", { unique: false });
           }
         };
         req.onsuccess = function(){ resolve(req.result); };
         req.onerror = function(){ reject(req.error || new Error("IndexedDB open failed")); };
-        req.onblocked = function(){ reject(new Error("IndexedDB blocked — tutup tab lain yang buka tracker ini.")); };
+        req.onblocked = function(){ reject(new Error("IndexedDB disekat — tutup tab lain yang buka tracker ini.")); };
       });
       dbPromise.catch(function(){ dbPromise = null; });
       return dbPromise;
     }
-
     function tx(mode, fn){
       return open().then(function(db){
         return new Promise(function(resolve, reject){
@@ -2516,41 +3319,71 @@
         });
       });
     }
-
-    // Namespace per profile: "" = original keys (default/migrated profile),
-    // otherwise keys are "<profileId>|YYYY-MM|account|txId".
-    var ns = "";
-    function setNamespace(v){ ns = v || ""; }
-    function nsPrefix(n){ return n ? n + "|" : ""; }
-    function ownsKey(k, n){ return n ? String(k).indexOf(n + "|") === 0 : /^\d{4}-\d{2}\|/.test(String(k)); }
-    function makeKey(month, account, txId){ return nsPrefix(ns) + month + "|" + account + "|" + txId; }
-
-    function init(){
+    function makeKey(month, account, txId){ return month + "|" + account + "|" + txId; }
+    function newRecId(){ return Crypt.hex(Crypt.rand(16)); }
+    function listRecords(profileId){
       return tx("readonly", function(store, done){
-        var req = store.openCursor();
-        var found = [];
-        req.onsuccess = function(){
-          var cur = req.result;
-          if(cur){ found.push(cur.key); cur.continue(); } else done(found);
-        };
-      }).then(function(found){
-        keys = {};
-        (found || []).forEach(function(k){ keys[k] = true; });
-        ready = true;
+        var req = store.index("profileId").getAll(IDBKeyRange.only(profileId));
+        req.onsuccess = function(){ done(req.result || []); };
       });
     }
+    function getRecord(id){
+      return tx("readonly", function(store, done){
+        var req = store.get(id);
+        req.onsuccess = function(){ done(req.result || null); };
+      });
+    }
+    function putRecords(recs){ return tx("readwrite", function(store){ recs.forEach(function(r){ store.put(r); }); }); }
+    function deleteIds(ids){
+      if(!ids || !ids.length) return Promise.resolve();
+      return tx("readwrite", function(store){ ids.forEach(function(id){ store.delete(id); }); });
+    }
 
-    function readAsArrayBuffer(blob){
-      return new Promise(function(resolve, reject){
-        var fr = new FileReader();
-        fr.onload = function(){ resolve(fr.result); };
-        fr.onerror = function(){ reject(fr.error || new Error("Could not read file")); };
-        fr.readAsArrayBuffer(blob);
+    function encryptRecord(profileId, key, salt, meta, bytes){
+      return Promise.all([
+        Crypt.encryptText(key, JSON.stringify(meta), "receipt-meta"),
+        Crypt.encryptBytes(key, bytes, "receipt-data")
+      ]).then(function(r){
+        return { id: newRecId(), profileId: profileId, salt: salt, metaIv: r[0].iv, metaCt: r[0].ct, iv: r[1].iv, ct: r[1].ct };
+      });
+    }
+    function decryptMeta(key, rec){
+      return Crypt.decryptText(key, { iv: rec.metaIv, ct: rec.metaCt }, "receipt-meta").then(function(t){ return JSON.parse(t); });
+    }
+    function decryptData(key, rec){ return Crypt.decryptBytes(key, rec.iv, rec.ct, "receipt-data"); }
+
+    function setSession(s){ sess = s; index = {}; ready = false; }
+    function reset(){ sess = null; index = {}; ready = false; }
+
+    // Build the index for the open profile. Copies left over from an
+    // interrupted password change (other key generation) are removed.
+    function init(){
+      var s = sess;
+      if(!s) return Promise.resolve();
+      return listRecords(s.profileId).then(function(recs){
+        var stale = [];
+        return Promise.all(recs.map(function(r){
+          if(r.salt !== s.salt){ stale.push(r.id); return null; }
+          return decryptMeta(s.key, r).then(function(meta){ return { id: r.id, meta: meta }; }, function(){ return null; });
+        })).then(function(list){
+          if(sess !== s) return;
+          var idx = {}, dupes = [];
+          list.forEach(function(x){
+            if(!x || !x.meta || typeof x.meta.key !== "string") return;
+            var prev = idx[x.meta.key];
+            if(prev && String(prev.meta.savedAt) >= String(x.meta.savedAt)){ dupes.push(x.id); return; }
+            if(prev) dupes.push(prev.id);
+            idx[x.meta.key] = x;
+          });
+          index = idx;
+          ready = true;
+          var junk = stale.concat(dupes);
+          if(junk.length) deleteIds(junk).catch(function(){});
+        });
       });
     }
 
     // Phone photos are large; scale to max 1600px JPEG so many receipts fit.
-    // If the browser can't decode the image, the original file is stored.
     function compress(file){
       return new Promise(function(resolve){
         var url;
@@ -2559,10 +3392,10 @@
         img.onload = function(){
           try{
             var max = 1600, w = img.naturalWidth, h = img.naturalHeight;
-            var s = Math.min(1, max / Math.max(w, h));
+            var sc = Math.min(1, max / Math.max(w, h));
             var c = document.createElement("canvas");
-            c.width = Math.max(1, Math.round(w * s));
-            c.height = Math.max(1, Math.round(h * s));
+            c.width = Math.max(1, Math.round(w * sc));
+            c.height = Math.max(1, Math.round(h * sc));
             var ctx = c.getContext("2d");
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, c.width, c.height);
@@ -2579,82 +3412,133 @@
     }
 
     function save(month, account, txId, file){
+      var s = sess;
+      if(!s) return Promise.reject(new Error("Profil dikunci."));
       if(!file) return Promise.reject(new Error("Tiada fail dipilih."));
       if(file.type && !/^image\//.test(file.type)) return Promise.reject(new Error("Sila pilih fail gambar."));
-      var key = makeKey(month, account, txId);
+      var key = makeKey(month, account, txId), rec;
       return compress(file).then(function(blob){
-        return readAsArrayBuffer(blob).then(function(buf){
-          var rec = {
-            key: key, month: month, account: account, txId: txId, profileNs: ns,
-            type: blob.type || file.type || "image/jpeg",
-            data: buf, size: buf.byteLength, name: file.name || "receipt",
-            savedAt: new Date().toISOString()
-          };
-          return tx("readwrite", function(store){ store.put(rec); });
+        return blob.arrayBuffer().then(function(buf){
+          var meta = { key: key, month: month, type: blob.type || file.type || "image/jpeg",
+            name: file.name || "receipt", size: buf.byteLength, savedAt: new Date().toISOString() };
+          return encryptRecord(s.profileId, s.key, s.salt, meta, buf).then(function(r){ rec = r; rec._meta = meta; });
         });
       }).then(function(){
-        keys[key] = true;
+        var meta = rec._meta; delete rec._meta;
+        return putRecords([rec]).then(function(){
+          var old = index[key];
+          if(sess === s){ index[key] = { id: rec.id, meta: meta }; }
+          if(old) return deleteIds([old.id]);
+        });
+      }).then(function(){
         try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
         return key;
       });
     }
 
+    // Same shape as before: { data: ArrayBuffer, type, size, savedAt }
     function get(key){
-      return tx("readonly", function(store, done){
-        var req = store.get(key);
-        req.onsuccess = function(){ done(req.result || null); };
+      var s = sess, entry = index[key];
+      if(!s || !entry) return Promise.resolve(null);
+      return getRecord(entry.id).then(function(rec){
+        if(!rec) return null;
+        return decryptData(s.key, rec).then(function(buf){
+          return { data: buf, type: entry.meta.type, size: entry.meta.size, savedAt: entry.meta.savedAt };
+        });
       });
     }
-
     function remove(key){
-      if(ready && !keys[key]) return Promise.resolve();
-      return tx("readwrite", function(store){ store.delete(key); }).then(function(){ delete keys[key]; });
+      var entry = index[key];
+      if(!entry) return Promise.resolve();
+      delete index[key];
+      return deleteIds([entry.id]);
     }
-
-    // Only the active profile's receipts for that month
     function removeMonth(month){
-      var n = ns;
-      return tx("readwrite", function(store){
-        var req = store.index("month").openCursor(IDBKeyRange.only(month));
-        req.onsuccess = function(){
-          var cur = req.result;
-          if(cur){ if(ownsKey(cur.primaryKey, n)) cur.delete(); cur.continue(); }
-        };
-      }).then(function(){
-        var pre = nsPrefix(n) + month + "|";
-        Object.keys(keys).forEach(function(k){ if(k.indexOf(pre) === 0) delete keys[k]; });
+      var ids = [];
+      Object.keys(index).forEach(function(k){ if(index[k].meta.month === month || k.indexOf(month + "|") === 0){ ids.push(index[k].id); delete index[k]; } });
+      return deleteIds(ids);
+    }
+    function clearAll(){
+      var s = sess;
+      if(!s) return Promise.resolve();
+      index = {};
+      return deleteProfileRecords(s.profileId);
+    }
+    function deleteProfileRecords(profileId){
+      return listRecords(profileId).then(function(recs){ return deleteIds(recs.map(function(r){ return r.id; })); });
+    }
+    function has(key){ return !!index[key]; }
+    function countForMonth(month){ return Object.keys(index).filter(function(k){ return k.indexOf(month + "|") === 0; }).length; }
+
+    // Password change: decrypt with the old key, write new copies with the new
+    // key (new ids). Old copies are removed by init() after the switch-over.
+    function reencryptProfile(profileId, oldKey, oldSalt, newKey, newSalt, createdIds){
+      return listRecords(profileId).then(function(recs){
+        var chain = Promise.resolve();
+        recs.forEach(function(r){
+          if(r.salt !== oldSalt) return;
+          chain = chain.then(function(){
+            return Promise.all([decryptMeta(oldKey, r), decryptData(oldKey, r)]).then(function(x){
+              return encryptRecord(profileId, newKey, newSalt, x[0], x[1]);
+            }).then(function(nr){
+              createdIds.push(nr.id);
+              return putRecords([nr]);
+            });
+          });
+        });
+        return chain;
       });
     }
 
-    // All receipts of one profile namespace (other profiles untouched)
-    function clearNamespace(n){
-      n = n || "";
-      return tx("readwrite", function(store){
-        var req = store.openCursor();
-        req.onsuccess = function(){
-          var cur = req.result;
-          if(cur){ if(ownsKey(cur.primaryKey, n)) cur.delete(); cur.continue(); }
-        };
-      }).then(function(){
-        Object.keys(keys).forEach(function(k){ if(ownsKey(k, n)) delete keys[k]; });
+    // Encrypted backup: records copied as they are (still encrypted)
+    function exportProfileRecords(profileId, salt){
+      return listRecords(profileId).then(function(recs){
+        return recs.filter(function(r){ return r.salt === salt; }).map(function(r){
+          return { metaIv: r.metaIv, metaCt: r.metaCt, iv: r.iv, ct: Crypt.toB64(r.ct) };
+        });
       });
     }
-    function clearAll(){ return clearNamespace(ns); } // active profile only
-
-    function has(key){ return !!keys[key]; }
-    function countForMonth(month){
-      var pre = nsPrefix(ns) + month + "|";
-      return Object.keys(keys).filter(function(k){ return k.indexOf(pre) === 0; }).length;
+    function importRecords(profileId, key, salt, list, createdIds){
+      var chain = Promise.resolve();
+      list.forEach(function(x){
+        chain = chain.then(function(){
+          var rec = { id: newRecId(), profileId: profileId, salt: salt, metaIv: x.metaIv, metaCt: x.metaCt, iv: x.iv, ct: Crypt.fromB64(x.ct).buffer };
+          return decryptMeta(key, rec).then(function(){ // must belong to this password
+            createdIds.push(rec.id);
+            return putRecords([rec]);
+          });
+        });
+      });
+      return chain;
     }
-    function countForNamespace(n){
-      return Object.keys(keys).filter(function(k){ return ownsKey(k, n || ""); }).length;
+
+    // Migration: encrypt plain receipts, then decrypt again and compare bytes.
+    function writePlainAndVerify(profileId, key, salt, items, createdIds){
+      var chain = Promise.resolve();
+      items.forEach(function(it){
+        chain = chain.then(function(){
+          return encryptRecord(profileId, key, salt, it.meta, it.bytes).then(function(rec){
+            createdIds.push(rec.id);
+            return putRecords([rec]).then(function(){ return getRecord(rec.id); });
+          }).then(function(stored){
+            return Promise.all([decryptMeta(key, stored), decryptData(key, stored)]);
+          }).then(function(x){
+            var a = new Uint8Array(x[1]), b = new Uint8Array(it.bytes);
+            if(x[0].key !== it.meta.key || a.length !== b.length) throw new Error("Pengesahan resit gagal (" + it.meta.key + ").");
+            for(var i = 0; i < a.length; i++) if(a[i] !== b[i]) throw new Error("Pengesahan resit gagal (" + it.meta.key + ").");
+          });
+        });
+      });
+      return chain;
     }
 
     return {
       init: init, save: save, get: get, remove: remove, removeMonth: removeMonth, clearAll: clearAll,
-      clearNamespace: clearNamespace, setNamespace: setNamespace, countForNamespace: countForNamespace,
       has: has, makeKey: makeKey, countForMonth: countForMonth,
-      isReady: function(){ return ready; }, supported: supported
+      isReady: function(){ return ready; }, supported: supported,
+      setSession: setSession, reset: reset, deleteIds: deleteIds, deleteProfileRecords: deleteProfileRecords,
+      reencryptProfile: reencryptProfile, exportProfileRecords: exportProfileRecords, importRecords: importRecords,
+      writePlainAndVerify: writePlainAndVerify, listRecords: listRecords
     };
   })();
 
@@ -2751,52 +3635,91 @@
         }
       });
 
-      // Due date row (optional). Changing it only saves + re-renders; it never
-      // touches amount, paid tick, links or any balance.
+      // Optional due date (per commitment). Three states:
+      //   no date      → small "＋ Add Due Date" action
+      //   choosing     → native date picker + "Batal" (this commitment only)
+      //   date set     → "📅 27 Nov 2026" (tap to edit) + status + ✕ (remove date only)
+      // Changing it only saves + re-renders; it never touches the amount,
+      // paid tick, linked movements or any balance.
       var dueRow = document.createElement("div");
       dueRow.className = "expense-due";
-      var dueLabel = document.createElement("span");
-      dueLabel.className = "due-label";
-      dueLabel.textContent = "📅 Due";
+      var dueEditing = false;
+
+      var dueAdd = document.createElement("button");
+      dueAdd.type = "button";
+      dueAdd.className = "due-add";
+      dueAdd.textContent = "＋ Add Due Date";
+
+      var dueDateBtn = document.createElement("button");
+      dueDateBtn.type = "button";
+      dueDateBtn.className = "due-date-btn";
+      dueDateBtn.title = "Tukar due date";
+
       var dueWrap = document.createElement("div");
       dueWrap.className = "due-input-wrap";
       var dueInput = document.createElement("input");
       dueInput.type = "date";
       dueInput.setAttribute("aria-label", "Due date");
-      dueInput.value = isDueDate(expense.dueDate) ? expense.dueDate : "";
+      dueWrap.appendChild(dueInput);
+
+      var dueCancel = document.createElement("button");
+      dueCancel.type = "button";
+      dueCancel.className = "due-cancel";
+      dueCancel.textContent = "Batal";
+
+      var dueBadge = document.createElement("span");
+      dueBadge.className = "due-badge";
+
       var dueClear = document.createElement("button");
       dueClear.type = "button";
       dueClear.className = "due-clear";
       dueClear.setAttribute("aria-label", "Buang due date");
+      dueClear.title = "Buang due date (commitment tidak dipadam)";
       dueClear.textContent = "✕";
+
       function syncDueUi(){
         var has = isDueDate(expense.dueDate);
-        dueInput.classList.toggle("is-empty", !has);
-        dueClear.hidden = !has;
+        dueAdd.hidden = has || dueEditing;
+        dueDateBtn.hidden = !has || dueEditing;
+        dueDateBtn.textContent = has ? "📅 " + formatDueDate(expense.dueDate) : "";
+        dueWrap.hidden = !dueEditing;
+        dueCancel.hidden = !dueEditing;
+        dueBadge.hidden = !has || dueEditing;
+        dueClear.hidden = !has || dueEditing;
       }
-      function onDueChange(){
-        var v = dueInput.value;
-        var next = isDueDate(v) ? v : null;
-        if(next === (isDueDate(expense.dueDate) ? expense.dueDate : null)) return;
-        expense.dueDate = next;
+      function startDueEdit(){
+        dueEditing = true;
+        dueInput.value = isDueDate(expense.dueDate) ? expense.dueDate : "";
         syncDueUi();
-        saveState();
-        renderCalculations();
+        dueInput.focus();
+        try{ if(typeof dueInput.showPicker === "function") dueInput.showPicker(); }catch(e){ /* picker opens on tap instead */ }
       }
-      dueInput.addEventListener("input", onDueChange);
-      dueInput.addEventListener("change", onDueChange);
-      dueClear.addEventListener("click", function(){
-        dueInput.value = "";
-        onDueChange();
+      function commitDue(v){
+        var next = isDueDate(v) ? v : null;
+        var cur = isDueDate(expense.dueDate) ? expense.dueDate : null;
+        dueEditing = false;
+        if(next !== cur){
+          expense.dueDate = next;
+          saveState();
+          renderCalculations();
+        }
+        syncDueUi();
+      }
+      dueAdd.addEventListener("click", startDueEdit);
+      dueDateBtn.addEventListener("click", startDueEdit);
+      dueInput.addEventListener("change", function(){
+        if(isDueDate(dueInput.value)) commitDue(dueInput.value);
       });
+      dueCancel.addEventListener("click", function(){ dueEditing = false; syncDueUi(); });
+      dueClear.addEventListener("click", function(){ commitDue(null); });
       syncDueUi();
-      var dueBadge = document.createElement("span");
-      dueBadge.className = "due-badge";
-      dueWrap.appendChild(dueInput);
-      dueWrap.appendChild(dueClear);
-      dueRow.appendChild(dueLabel);
+
+      dueRow.appendChild(dueAdd);
+      dueRow.appendChild(dueDateBtn);
       dueRow.appendChild(dueWrap);
+      dueRow.appendChild(dueCancel);
       dueRow.appendChild(dueBadge);
+      dueRow.appendChild(dueClear);
 
       var status = document.createElement("div");
       status.className = "expense-status";
@@ -2843,7 +3766,8 @@
             badge.textContent = "⏰ Due today";
           } else {
             badge.classList.add("due-upcoming");
-            badge.textContent = "Due " + formatDueDate(due);
+            var ahead = daysBetween(today, due);
+            badge.textContent = "🗓 Upcoming · " + ahead + " hari";
           }
         }
       }
@@ -4216,22 +5140,26 @@
   function init(){
     wireEvents();
     wireProfileEvents();
+    wireLockScreen();
+    if(!Crypt.available()){ showLockScreen(); return; } // clear error, nothing stored
     try{
-      registry = migrateIfNeeded();
+      vault = readVault();
     }catch(err){
-      registry = null;
-      enterLoadError(null, err);
+      // never overwrite a damaged profile list
+      document.getElementById("lockMain").hidden = true;
+      var ve = document.getElementById("vaultError");
+      ve.textContent = "⚠️ Senarai profil tak dapat dibaca: " + err.message + " Tiada data dipadam atau ditulis ganti.";
+      ve.hidden = false;
+      document.body.classList.add("locked");
+      document.getElementById("lockScreen").hidden = false;
+      return;
     }
-    if(registry) activateProfile(registry.activeId);
-    // receipts index loads asynchronously; refresh the buttons when ready
-    Receipts.init().then(refreshReceiptControls).catch(function(err){
-      console.warn("Receipt storage unavailable:", err);
-    });
+    showLockScreen();
   }
 
-  // exposed only for automated testing; not used by the app itself
+  // exposed only for automated testing; gives nothing while locked
   window.__moneyTracker = { calcMonth: calcMonth, getState: function(){ return state; }, receipts: Receipts, buildMonthSheets: buildMonthSheets,
-    getRegistry: function(){ return registry; }, switchProfile: switchProfile, createProfile: createProfile, renameProfile: renameProfile, deleteProfile: deleteProfile };
+    flush: function(){ return flushPendingEdits(); }, lock: function(){ return lockSession(); }, isLocked: function(){ return !session; } };
 
   document.addEventListener("DOMContentLoaded", init);
 })();
